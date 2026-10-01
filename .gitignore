@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.local
+.claude/settings.local.json
+server/data/*.db
+server/data/*.db-*
+scripts/screenshots/
+.DS_Store

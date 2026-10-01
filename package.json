@@ -1,0 +1,21 @@
+{
+  "name": "personal-work-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人工作面板：任务待办 + 日程日历 + 数据统计",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "seed": "npm run seed -w server",
+    "reset": "npm run reset -w server",
+    "test": "npm test -w server",
+    "build": "npm run build -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "playwright-core": "^1.63.0"
+  }
+}
