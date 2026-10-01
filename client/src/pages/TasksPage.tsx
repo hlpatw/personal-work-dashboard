@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTasks, updateTaskStatus, deleteTask, type TaskFilters } from '../api/tasks';
 import {
@@ -24,6 +25,15 @@ export default function TasksPage() {
   const [filters, setFilters] = useState<TaskFilters>({ status: '', category: '', priority: '', q: '' });
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
+
+  // 支持 URL 参数预筛选（如概览卡片跳转 /tasks?status=todo）
+  const [searchParams] = useSearchParams();
+  const statusParam = searchParams.get('status');
+  useEffect(() => {
+    if (statusParam && (TASK_STATUSES as readonly string[]).includes(statusParam)) {
+      setFilters((f) => ({ ...f, status: statusParam as TaskStatus }));
+    }
+  }, [statusParam]);
 
   const { data: tasks, isLoading, isError, error } = useQuery({
     queryKey: ['tasks', filters],

@@ -37,7 +37,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-stone-200 bg-white py-4 dark:border-stone-800 dark:bg-stone-900 md:w-56 md:items-stretch md:px-3">
+    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-stone-200/70 bg-white/70 py-4 backdrop-blur-xl dark:border-white/[0.06] dark:bg-stone-900/70 md:w-56 md:items-stretch md:px-3">
       {/* 个人区 */}
       <button
         onClick={openEdit}

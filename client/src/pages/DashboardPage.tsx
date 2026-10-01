@@ -42,23 +42,40 @@ export default function DashboardPage() {
   );
   const doneToday = tasks.filter((t) => t.status === 'done' && t.completed_at?.startsWith(today));
 
+  // Bento 统计卡片：可点击跳转到对应筛选视图
   const cards = [
-    { label: '今日待办', value: summary?.today.todo ?? 0, hint: `${summary?.today.total ?? 0} 项总计`, ring: false },
-    { label: '进行中', value: summary?.today.in_progress ?? 0, hint: '正在处理的任务', ring: false },
+    {
+      label: '今日待办',
+      value: summary?.today.todo ?? 0,
+      hint: `${summary?.today.total ?? 0} 项总计`,
+      to: '/tasks?status=todo',
+    },
+    {
+      label: '进行中',
+      value: summary?.today.in_progress ?? 0,
+      hint: '正在处理的任务',
+      to: '/tasks?status=in_progress',
+    },
     {
       label: '今日完成',
       value: summary?.today.done ?? 0,
       hint: `完成率 ${summary?.today.completion_rate ?? 0}%`,
-      ring: true,
+      to: '/tasks?status=done',
+      featured: true,
     },
-    { label: '今日日程', value: summary?.today.schedules_count ?? 0, hint: formatCN(new Date(), 'M月d日'), ring: false },
+    {
+      label: '今日日程',
+      value: summary?.today.schedules_count ?? 0,
+      hint: formatCN(new Date(), 'M月d日'),
+      to: '/calendar',
+    },
   ];
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">概览</h1>
-        <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">
+        <p className="mt-0.5 text-sm text-stone-600 dark:text-stone-300">
           {formatCN(new Date(), 'yyyy年M月d日 EEEE')}
           {(summary?.overdue_count ?? 0) > 0 && (
             <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600 dark:bg-red-500/20 dark:text-red-400">
@@ -68,10 +85,18 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* Bento 统计卡片（今日完成为主卡，占两列带进度环） */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {cards.map((c) => (
-          <StatCard key={c.label} label={c.label} value={c.value} hint={c.hint} ring={c.ring} ringValue={summary?.today.completion_rate ?? 0} />
+          <StatCard
+            key={c.label}
+            label={c.label}
+            value={c.value}
+            hint={c.hint}
+            to={c.to}
+            featured={c.featured}
+            ringValue={summary?.today.completion_rate ?? 0}
+          />
         ))}
       </div>
 
@@ -158,27 +183,42 @@ function StatCard({
   label,
   value,
   hint,
-  ring = false,
+  to,
+  featured = false,
   ringValue = 0,
 }: {
   label: string;
   value: number;
   hint: string;
-  ring?: boolean;
+  to: string;
+  featured?: boolean;
   ringValue?: number;
 }) {
   const animated = useCountUp(value);
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs text-stone-500 dark:text-stone-400">{label}</p>
-          <p className="mt-1 text-2xl font-semibold tracking-tight">{animated}</p>
-          <p className="mt-0.5 truncate text-xs text-stone-400 dark:text-stone-500">{hint}</p>
+    <Link
+      to={to}
+      className={`group block rounded-2xl focus-visible:outline-none ${featured ? 'col-span-2' : ''}`}
+      title={`查看${label}`}
+    >
+      <Card
+        className={`h-full p-4 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-rose-500/10 group-focus-visible:ring-2 group-focus-visible:ring-rose-400/60 ${featured ? 'p-5' : ''}`}
+      >
+        <div className="flex h-full items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs text-stone-500 dark:text-stone-400">{label}</p>
+            <p className={`mt-1 font-semibold tracking-tight ${featured ? 'text-3xl' : 'text-2xl'}`}>{animated}</p>
+            <p className="mt-0.5 truncate text-xs text-stone-500 dark:text-stone-400">{hint}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {featured && <ProgressRing value={ringValue} size={72} stroke={7} />}
+            <span className="text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-stone-500">
+              →
+            </span>
+          </div>
         </div>
-        {ring && <ProgressRing value={ringValue} />}
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 }
 
