@@ -77,12 +77,12 @@ export const PRIORITY_LABELS: Record<TaskPriority, string> = {
 export const PRIORITY_DOT: Record<TaskPriority, string> = {
   urgent: 'bg-red-500',
   high: 'bg-orange-500',
-  medium: 'bg-blue-500',
-  low: 'bg-zinc-400',
+  medium: 'bg-sky-500',
+  low: 'bg-stone-400',
 };
 
 export const STATUS_BADGE: Record<TaskStatus, string> = {
-  todo: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/60 dark:text-zinc-300',
-  in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
+  todo: 'bg-stone-200 text-stone-700 dark:bg-stone-700/60 dark:text-stone-300',
+  in_progress: 'bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300',
   done: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
 };

@@ -11,14 +11,14 @@ html.dark {
 }
 
 body {
-  @apply bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased;
+  @apply bg-rose-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100 antialiased;
 }
 
-/* 细滚动条，与主题协调 */
+/* 细滚动条，与主题协调（暖石板色调） */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(161 161 170 / 0.4) transparent;
+  scrollbar-color: rgb(168 162 158 / 0.4) transparent;
 }
 .dark * {
-  scrollbar-color: rgb(82 82 91 / 0.6) transparent;
+  scrollbar-color: rgb(87 83 78 / 0.6) transparent;
 }

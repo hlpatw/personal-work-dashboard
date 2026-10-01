@@ -58,7 +58,7 @@ export default function DashboardPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">概览</h1>
-        <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">
           {formatCN(new Date(), 'yyyy年M月d日 EEEE')}
           {(summary?.overdue_count ?? 0) > 0 && (
             <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600 dark:bg-red-500/20 dark:text-red-400">
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         <Card className="p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold">今日任务</h2>
-            <Link to="/tasks" className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
+            <Link to="/tasks" className="text-xs text-rose-600 hover:underline dark:text-rose-400">
               查看全部 →
             </Link>
           </div>
@@ -92,7 +92,7 @@ export default function DashboardPage() {
                 <TaskRow key={t.id} task={t} overdue toggle={toggleMutation.mutate} />
               ))}
               {overdueTasks.length > 0 && todayTasks.length > 0 && (
-                <div className="my-1 border-t border-dashed border-zinc-200 dark:border-zinc-800" />
+                <div className="my-1 border-t border-dashed border-stone-200 dark:border-stone-800" />
               )}
               {todayTasks.map((t) => (
                 <TaskRow key={t.id} task={t} toggle={toggleMutation.mutate} />
@@ -105,25 +105,25 @@ export default function DashboardPage() {
         <Card className="p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold">今日日程</h2>
-            <Link to="/calendar" className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
+            <Link to="/calendar" className="text-xs text-rose-600 hover:underline dark:text-rose-400">
               打开日历 →
             </Link>
           </div>
           {!todaySchedules || todaySchedules.length === 0 ? (
             <EmptyState text="今日暂无日程安排" icon="▤" />
           ) : (
-            <ul className="relative space-y-3 pl-4 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-px before:bg-zinc-200 dark:before:bg-zinc-800">
+            <ul className="relative space-y-3 pl-4 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-px before:bg-stone-200 dark:before:bg-stone-800">
               {todaySchedules.map((s) => (
                 <li key={s.id} className="relative">
-                  <span className="absolute -left-[13px] top-1.5 h-2 w-2 rounded-full bg-indigo-500" />
+                  <span className="absolute -left-[13px] top-1.5 h-2 w-2 rounded-full bg-rose-500" />
                   <div className="flex items-baseline gap-2">
-                    <span className="shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                    <span className="shrink-0 text-xs font-medium text-rose-600 dark:text-rose-400">
                       {s.start_time ?? '全天'}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-sm">{s.title}</p>
                       {s.location && (
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500">📍 {s.location}</p>
+                        <p className="text-xs text-stone-400 dark:text-stone-500">📍 {s.location}</p>
                       )}
                     </div>
                   </div>
@@ -172,9 +172,9 @@ function StatCard({
     <Card className="p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+          <p className="text-xs text-stone-500 dark:text-stone-400">{label}</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">{animated}</p>
-          <p className="mt-0.5 truncate text-xs text-zinc-400 dark:text-zinc-500">{hint}</p>
+          <p className="mt-0.5 truncate text-xs text-stone-400 dark:text-stone-500">{hint}</p>
         </div>
         {ring && <ProgressRing value={ringValue} />}
       </div>
@@ -192,10 +192,10 @@ function TaskRow({
   toggle: (v: { id: number; done: boolean }) => void;
 }) {
   return (
-    <li className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+    <li className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 hover:bg-stone-50 dark:hover:bg-stone-800/60">
       <button
         onClick={() => toggle({ id: task.id, done: true })}
-        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-zinc-300 hover:border-indigo-500 dark:border-zinc-600"
+        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-stone-300 hover:border-rose-500 dark:border-stone-600"
         aria-label="标记完成"
       />
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${PRIORITY_DOT[task.priority]}`} />

@@ -5,7 +5,7 @@ interface Props {
   stroke?: number;
 }
 
-/** 环形进度：填充 indigo-500，轨道用同色系浅色阶 */
+/** 环形进度：填充 rose-500，轨道用同色系浅色阶 */
 export default function ProgressRing({ value, size = 56, stroke = 6 }: Props) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -20,7 +20,7 @@ export default function ProgressRing({ value, size = 56, stroke = 6 }: Props) {
         r={r}
         fill="none"
         strokeWidth={stroke}
-        className="stroke-indigo-100 dark:stroke-indigo-500/20"
+        className="stroke-rose-100 dark:stroke-rose-400/30"
       />
       <circle
         cx={size / 2}
@@ -31,7 +31,7 @@ export default function ProgressRing({ value, size = 56, stroke = 6 }: Props) {
         strokeLinecap="round"
         strokeDasharray={c}
         strokeDashoffset={c * (1 - clamped / 100)}
-        className="stroke-indigo-500 -rotate-90"
+        className="stroke-rose-500 -rotate-90"
         style={{ transformOrigin: 'center' }}
       />
     </svg>

@@ -17,7 +17,7 @@ import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
 
 const selectCls =
-  'rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800';
+  'rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-rose-500 dark:border-stone-700 dark:bg-stone-800';
 
 export default function TasksPage() {
   const queryClient = useQueryClient();
@@ -83,7 +83,7 @@ export default function TasksPage() {
         </select>
         <button
           onClick={() => setCreating(true)}
-          className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm shadow-indigo-600/20 transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+          className="rounded-lg bg-rose-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm shadow-rose-600/20 transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/40"
         >
           ＋ 新建任务
         </button>
@@ -91,13 +91,13 @@ export default function TasksPage() {
 
       <Card>
         {isLoading ? (
-          <div className="py-12 text-center text-sm text-zinc-400">加载中…</div>
+          <div className="py-12 text-center text-sm text-stone-400">加载中…</div>
         ) : isError ? (
           <div className="py-12 text-center text-sm text-red-500">{(error as Error).message}</div>
         ) : !tasks || tasks.length === 0 ? (
           <EmptyState text="没有符合条件的任务" />
         ) : (
-          <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <ul className="divide-y divide-stone-100 dark:divide-stone-800">
             {tasks.map((task) => {
               const overdue = task.status !== 'done' && task.due_date !== null && task.due_date < today;
               return (
@@ -109,7 +109,7 @@ export default function TasksPage() {
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
                       task.status === 'done'
                         ? 'border-emerald-500 bg-emerald-500 text-white'
-                        : 'border-zinc-300 hover:border-indigo-500 dark:border-zinc-600'
+                        : 'border-stone-300 hover:border-rose-500 dark:border-stone-600'
                     }`}
                     aria-label={task.status === 'done' ? '标记为待办' : '标记为完成'}
                   >
@@ -119,22 +119,22 @@ export default function TasksPage() {
                   <span className={`h-2 w-2 shrink-0 rounded-full ${PRIORITY_DOT[task.priority]}`} title={`优先级：${PRIORITY_LABELS[task.priority]}`} />
 
                   <div className="min-w-0 flex-1">
-                    <p className={`truncate text-sm ${task.status === 'done' ? 'text-zinc-400 line-through dark:text-zinc-500' : ''}`}>
+                    <p className={`truncate text-sm ${task.status === 'done' ? 'text-stone-400 line-through dark:text-stone-500' : ''}`}>
                       {task.title}
                     </p>
                     {task.description && (
-                      <p className="truncate text-xs text-zinc-400 dark:text-zinc-500">{task.description}</p>
+                      <p className="truncate text-xs text-stone-400 dark:text-stone-500">{task.description}</p>
                     )}
                   </div>
 
-                  <span className="hidden rounded px-1.5 py-0.5 text-xs text-zinc-500 dark:text-zinc-400 sm:inline">
+                  <span className="hidden rounded px-1.5 py-0.5 text-xs text-stone-500 dark:text-stone-400 sm:inline">
                     {task.category}
                   </span>
                   <span className={`hidden rounded px-1.5 py-0.5 text-xs sm:inline ${STATUS_BADGE[task.status]}`}>
                     {STATUS_LABELS[task.status]}
                   </span>
                   {task.due_date && (
-                    <span className={`text-xs ${overdue ? 'font-medium text-red-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                    <span className={`text-xs ${overdue ? 'font-medium text-red-500' : 'text-stone-400 dark:text-stone-500'}`}>
                       {overdue ? '逾期 ' : ''}
                       {formatCN(task.due_date, 'M月d日')}
                     </span>
@@ -143,7 +143,7 @@ export default function TasksPage() {
                   <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       onClick={() => setEditing(task)}
-                      className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+                      className="rounded p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-800"
                       title="编辑"
                     >
                       ✎
@@ -152,7 +152,7 @@ export default function TasksPage() {
                       onClick={() => {
                         if (window.confirm(`确定删除「${task.title}」吗？`)) deleteMutation.mutate(task.id);
                       }}
-                      className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
+                      className="rounded p-1 text-stone-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
                       title="删除"
                     >
                       🗑

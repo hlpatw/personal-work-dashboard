@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 ];
 
 const inputCls =
-  'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800';
+  'w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-rose-500 dark:border-stone-700 dark:bg-stone-800';
 
 export default function Sidebar() {
   const theme = useThemeStore((s) => s.theme);
@@ -37,19 +37,19 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-zinc-200 bg-white py-4 dark:border-zinc-800 dark:bg-zinc-900 md:w-56 md:items-stretch md:px-3">
+    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-stone-200 bg-white py-4 dark:border-stone-800 dark:bg-stone-900 md:w-56 md:items-stretch md:px-3">
       {/* 个人区 */}
       <button
         onClick={openEdit}
-        className="mb-4 flex items-center justify-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 md:justify-start"
+        className="mb-4 flex items-center justify-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors hover:bg-stone-100 dark:hover:bg-stone-800 md:justify-start"
         title="编辑个人信息"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-semibold text-white shadow-sm">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-400 text-sm font-semibold text-white shadow-sm">
           {nickname.slice(0, 1)}
         </span>
         <span className="hidden min-w-0 flex-col items-start md:flex">
           <span className="w-full truncate text-sm font-semibold">{nickname}</span>
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">点击编辑</span>
+          <span className="text-[10px] text-stone-400 dark:text-stone-500">点击编辑</span>
         </span>
       </button>
 
@@ -62,8 +62,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center justify-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors md:justify-start ${
                 isActive
-                  ? 'bg-indigo-50 font-medium text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300'
-                  : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
+                  ? 'bg-rose-50 font-medium text-rose-600 dark:bg-rose-500/15 dark:text-rose-300'
+                  : 'text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800'
               }`
             }
             title={item.label}
@@ -75,16 +75,16 @@ export default function Sidebar() {
       </nav>
 
       {/* 座右铭 + 日期 */}
-      <div className="mb-2 hidden w-full flex-col items-start gap-0.5 rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-zinc-800/60 md:flex">
-        <p className="w-full truncate text-xs italic text-zinc-500 dark:text-zinc-400" title={motto}>
+      <div className="mb-2 hidden w-full flex-col items-start gap-0.5 rounded-xl bg-stone-50 px-3 py-2.5 dark:bg-stone-800/60 md:flex">
+        <p className="w-full truncate text-xs italic text-stone-600 dark:text-stone-300" title={motto}>
           「{motto}」
         </p>
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{formatCN(new Date(), 'yyyy年M月d日 EEEE')}</p>
+        <p className="text-[10px] text-stone-500 dark:text-stone-400">{formatCN(new Date(), 'yyyy年M月d日 EEEE')}</p>
       </div>
 
       <button
         onClick={toggle}
-        className="flex items-center justify-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+        className="flex items-center justify-center gap-3 rounded-xl px-3 py-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
         title="切换主题"
       >
         <span className="text-base">{theme === 'dark' ? '☀' : '☾'}</span>
@@ -95,7 +95,7 @@ export default function Sidebar() {
         <Modal title="个人信息" onClose={() => setEditing(false)}>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-zinc-500">昵称</label>
+              <label className="mb-1 block text-xs font-medium text-stone-500">昵称</label>
               <input
                 autoFocus
                 className={inputCls}
@@ -106,7 +106,7 @@ export default function Sidebar() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-zinc-500">座右铭</label>
+              <label className="mb-1 block text-xs font-medium text-stone-500">座右铭</label>
               <input
                 className={inputCls}
                 value={mottoDraft}
@@ -118,13 +118,13 @@ export default function Sidebar() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setEditing(false)}
-                className="rounded-lg px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                className="rounded-lg px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
               >
                 取消
               </button>
               <button
                 onClick={save}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500"
               >
                 保存
               </button>
