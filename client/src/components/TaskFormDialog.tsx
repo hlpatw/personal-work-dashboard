@@ -30,6 +30,7 @@ export default function TaskFormDialog({ task, onClose }: Props) {
     priority: task?.priority ?? 'medium',
     status: task?.status ?? 'todo',
     due_date: task?.due_date ?? null,
+    estimated_minutes: task?.estimated_minutes ?? null,
   });
 
   const mutation = useMutation({
@@ -113,6 +114,20 @@ export default function TaskFormDialog({ task, onClose }: Props) {
             />
           </div>
           <div>
+            <label className="mb-1 block text-xs font-medium text-stone-500">预计时长（分钟）</label>
+            <input
+              type="number"
+              min={0}
+              step={5}
+              className={inputCls}
+              value={form.estimated_minutes ?? ''}
+              onChange={(e) =>
+                setForm({ ...form, estimated_minutes: e.target.value === '' ? null : Number(e.target.value) })
+              }
+              placeholder="如 45，可不填"
+            />
+          </div>
+          <div className="col-span-2">
             <label className="mb-1 block text-xs font-medium text-stone-500">状态</label>
             <select
               className={inputCls}

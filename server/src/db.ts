@@ -43,6 +43,7 @@ export function initDb(path: string): Db {
                     CHECK(status IN ('todo','in_progress','done')),
       due_date     TEXT,
       completed_at TEXT,
+      estimated_minutes INTEGER,
       user_id      INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
       created_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
       updated_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
@@ -70,6 +71,8 @@ export function initDb(path: string): Db {
   // 必须在建 user 索引之前执行——旧表加列前，user_id 上无法建索引。
   migrateAddColumn(db, 'tasks', 'user_id', 'INTEGER NOT NULL DEFAULT 1');
   migrateAddColumn(db, 'schedules', 'user_id', 'INTEGER NOT NULL DEFAULT 1');
+  // 预计完成时长（分钟），可空
+  migrateAddColumn(db, 'tasks', 'estimated_minutes', 'INTEGER');
 
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_user     ON tasks(user_id);

@@ -15,6 +15,14 @@ const taskSchema = z.object({
     .nullable()
     .optional()
     .default(null),
+  estimated_minutes: z
+    .number()
+    .int('预计时长需为整数分钟')
+    .min(0, '预计时长不能为负')
+    .max(100000, '预计时长过大')
+    .nullable()
+    .optional()
+    .default(null),
 });
 
 const statusSchema = z.object({
@@ -77,14 +85,15 @@ export default function taskRoutes(db: Db): Router {
     const input = taskSchema.parse(req.body);
     const result = run(
       db,
-      `INSERT INTO tasks (title, description, category, priority, status, due_date, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO tasks (title, description, category, priority, status, due_date, estimated_minutes, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       input.title,
       input.description,
       input.category,
       input.priority,
       input.status,
       input.due_date,
+      input.estimated_minutes,
       req.userId!
     );
     const created = row<Task>(
@@ -123,7 +132,8 @@ export default function taskRoutes(db: Db): Router {
     run(
       db,
       `UPDATE tasks SET title = ?, description = ?, category = ?, priority = ?, status = ?,
-        due_date = ?, completed_at = CASE WHEN ? = 'done' THEN datetime('now','localtime') ELSE NULL END,
+        due_date = ?, estimated_minutes = ?,
+        completed_at = CASE WHEN ? = 'done' THEN datetime('now','localtime') ELSE NULL END,
         updated_at = datetime('now','localtime')
        WHERE id = ? AND user_id = ?`,
       input.title,
@@ -132,6 +142,7 @@ export default function taskRoutes(db: Db): Router {
       input.priority,
       input.status,
       input.due_date,
+      input.estimated_minutes,
       input.status,
       id,
       req.userId!

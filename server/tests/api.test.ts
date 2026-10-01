@@ -99,6 +99,28 @@ describe('tasks', () => {
     expect(res.body.due_date).toBe(todayStr(5));
   });
 
+  it('支持预计完成时长字段', async () => {
+    const created = await request(app)
+      .post('/api/tasks')
+      .send({ title: '估时任务', estimated_minutes: 90 });
+    expect(created.status).toBe(201);
+    expect(created.body.estimated_minutes).toBe(90);
+
+    const updated = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: '估时任务', estimated_minutes: 45 });
+    expect(updated.status).toBe(200);
+    expect(updated.body.estimated_minutes).toBe(45);
+
+    const cleared = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: '估时任务', estimated_minutes: null });
+    expect(cleared.body.estimated_minutes).toBeNull();
+
+    const bad = await request(app).post('/api/tasks').send({ title: 'x', estimated_minutes: -5 });
+    expect(bad.status).toBe(400);
+  });
+
   it('不存在的 id 返回 404', async () => {
     expect((await request(app).get('/api/tasks/999')).status).toBe(404);
     expect((await request(app).put('/api/tasks/999').send({ title: 'x' })).status).toBe(404);

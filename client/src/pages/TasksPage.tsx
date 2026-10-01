@@ -13,9 +13,11 @@ import {
   type TaskStatus,
 } from '../api/types';
 import { formatCN, todayStr } from '../lib/date';
+import { formatDuration } from '../lib/format';
 import TaskFormDialog from '../components/TaskFormDialog';
 import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
+import { IconClock, IconPencil, IconTrash } from '../components/icons';
 
 const selectCls =
   'rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-rose-500 dark:border-stone-700 dark:bg-stone-800';
@@ -143,6 +145,12 @@ export default function TasksPage() {
                   <span className={`hidden rounded px-1.5 py-0.5 text-xs sm:inline ${STATUS_BADGE[task.status]}`}>
                     {STATUS_LABELS[task.status]}
                   </span>
+                  {task.estimated_minutes !== null && task.estimated_minutes > 0 && (
+                    <span className="hidden items-center gap-1 text-xs text-stone-400 dark:text-stone-500 sm:inline-flex" title={`预计 ${formatDuration(task.estimated_minutes)}`}>
+                      <IconClock />
+                      {formatDuration(task.estimated_minutes)}
+                    </span>
+                  )}
                   {task.due_date && (
                     <span className={`text-xs ${overdue ? 'font-medium text-red-500' : 'text-stone-400 dark:text-stone-500'}`}>
                       {overdue ? '逾期 ' : ''}
@@ -156,7 +164,7 @@ export default function TasksPage() {
                       className="rounded p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-800"
                       title="编辑"
                     >
-                      ✎
+                      <IconPencil />
                     </button>
                     <button
                       onClick={() => {
@@ -165,7 +173,7 @@ export default function TasksPage() {
                       className="rounded p-1 text-stone-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
                       title="删除"
                     >
-                      🗑
+                      <IconTrash />
                     </button>
                   </div>
                 </li>

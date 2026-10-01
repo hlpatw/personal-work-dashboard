@@ -4,12 +4,13 @@ import { useThemeStore } from '../stores/theme';
 import { useProfileStore } from '../stores/profile';
 import { formatCN } from '../lib/date';
 import Modal from './Modal';
+import { IconCalendar, IconDashboard, IconPencil, IconStats, IconTasks } from './icons';
 
 const NAV_ITEMS = [
-  { to: '/', label: '概览', icon: '◈', end: true },
-  { to: '/tasks', label: '任务', icon: '☑', end: false },
-  { to: '/calendar', label: '日历', icon: '▤', end: false },
-  { to: '/stats', label: '统计', icon: '◐', end: false },
+  { to: '/', label: '概览', icon: IconDashboard, end: true },
+  { to: '/tasks', label: '任务', icon: IconTasks, end: false },
+  { to: '/calendar', label: '日历', icon: IconCalendar, end: false },
+  { to: '/stats', label: '统计', icon: IconStats, end: false },
 ];
 
 const inputCls =
@@ -68,19 +69,26 @@ export default function Sidebar() {
             }
             title={item.label}
           >
-            <span className="text-base">{item.icon}</span>
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
             <span className="hidden md:inline">{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* 座右铭 + 日期 */}
-      <div className="mb-2 hidden w-full flex-col items-start gap-0.5 rounded-xl bg-stone-50 px-3 py-2.5 dark:bg-stone-800/60 md:flex">
-        <p className="w-full truncate text-xs italic text-stone-600 dark:text-stone-300" title={motto}>
-          「{motto}」
-        </p>
-        <p className="text-[10px] text-stone-500 dark:text-stone-400">{formatCN(new Date(), 'yyyy年M月d日 EEEE')}</p>
-      </div>
+      {/* 座右铭 + 日期：点击可编辑个人信息 */}
+      <button
+        onClick={openEdit}
+        className="group mb-2 hidden w-full items-start justify-between gap-1.5 rounded-xl bg-stone-50 px-3 py-2.5 text-left transition-colors hover:bg-stone-100 dark:bg-stone-800/60 dark:hover:bg-stone-800 md:flex"
+        title="编辑昵称与座右铭"
+      >
+        <span className="flex min-w-0 flex-col items-start gap-0.5">
+          <span className="w-full truncate text-xs italic text-stone-600 dark:text-stone-300">「{motto}」</span>
+          <span className="text-[10px] text-stone-500 dark:text-stone-400">
+            {formatCN(new Date(), 'yyyy年M月d日 EEEE')}
+          </span>
+        </span>
+        <IconPencil className="mt-0.5 h-3 w-3 shrink-0 text-stone-400 opacity-0 transition-opacity group-hover:opacity-100" />
+      </button>
 
       <button
         onClick={toggle}

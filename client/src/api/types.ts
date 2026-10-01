@@ -15,11 +15,15 @@ export interface Task {
   status: TaskStatus;
   due_date: string | null;
   completed_at: string | null;
+  estimated_minutes: number | null;
   created_at: string;
   updated_at: string;
 }
 
-export type TaskInput = Pick<Task, 'title' | 'description' | 'category' | 'priority' | 'status' | 'due_date'>;
+export type TaskInput = Pick<
+  Task,
+  'title' | 'description' | 'category' | 'priority' | 'status' | 'due_date' | 'estimated_minutes'
+>;
 
 export interface Schedule {
   id: number;

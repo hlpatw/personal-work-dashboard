@@ -8,6 +8,7 @@ import { monthGridDays, toDateStr, todayStr, formatCN } from '../lib/date';
 import ScheduleFormDialog from '../components/ScheduleFormDialog';
 import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
+import { IconMapPin, IconPencil, IconTrash } from '../components/icons';
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 
@@ -159,7 +160,12 @@ export default function CalendarPage() {
                       <p className="text-sm font-medium">{s.title}</p>
                       <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
                         {s.start_time ? `${s.start_time}${s.end_time ? ` – ${s.end_time}` : ''}` : '全天'}
-                        {s.location && <span className="ml-2">📍 {s.location}</span>}
+                        {s.location && (
+                          <span className="ml-2 inline-flex items-center gap-1">
+                            <IconMapPin />
+                            {s.location}
+                          </span>
+                        )}
                       </p>
                       {s.notes && <p className="mt-1 text-xs text-stone-400 dark:text-stone-500">{s.notes}</p>}
                     </div>
@@ -169,7 +175,7 @@ export default function CalendarPage() {
                         className="rounded p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-800"
                         title="编辑"
                       >
-                        ✎
+                        <IconPencil />
                       </button>
                       <button
                         onClick={() => {
@@ -178,7 +184,7 @@ export default function CalendarPage() {
                         className="rounded p-1 text-stone-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
                         title="删除"
                       >
-                        🗑
+                        <IconTrash />
                       </button>
                     </div>
                   </div>

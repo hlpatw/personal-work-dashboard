@@ -24,6 +24,7 @@ export interface Task {
   status: TaskStatus;
   due_date: string | null;
   completed_at: string | null;
+  estimated_minutes: number | null;
   created_at: string;
   updated_at: string;
 }
