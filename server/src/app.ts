@@ -1,5 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { initDb } from './db.js';
 import taskRoutes from './routes/tasks.js';
 import scheduleRoutes from './routes/schedules.js';
@@ -29,9 +32,26 @@ export function createApp(dbPath: string) {
   app.use('/api/schedules', scheduleRoutes(db));
   app.use('/api/stats', statsRoutes(db));
 
+  // 桌面模式 / 生产模式：若前端已构建（client/dist），直接托管并做 SPA 回退
+  const distDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'client', 'dist');
+  if (existsSync(distDir)) {
+    app.use(express.static(distDir));
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (req.method === 'GET' && !req.path.startsWith('/api/')) {
+        res.sendFile(join(distDir, 'index.html'));
+        return;
+      }
+      next();
+    });
+  }
+
   // 404
-  app.use((_req: Request, res: Response) => {
-    res.status(404).json({ error: '接口不存在' });
+  app.use((req: Request, res: Response) => {
+    if (req.path.startsWith('/api/')) {
+      res.status(404).json({ error: '接口不存在' });
+      return;
+    }
+    res.status(404).send('Not Found');
   });
 
   // 统一错误处理
