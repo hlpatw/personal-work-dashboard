@@ -231,19 +231,16 @@ async function selfCheck() {
   }
 }
 
-/** 宠物拖动：光标驱动窗口移动（渲染进程发增量位移，主进程 setPosition） */
-let dragBase = null; // { cursor: {x,y}, win: {x,y} }
+/** 宠物拖动：渲染进程发指针增量（dx,dy），主进程按窗口初始位置移动（不依赖屏幕光标） */
+let dragBase = null; // { win: {x,y} }
 ipcMain.on('pet-drag-start', () => {
   if (!petWin || petWin.isDestroyed()) return;
-  const { screen: electronScreen } = require('electron');
   const [x, y] = petWin.getPosition();
-  dragBase = { cursor: electronScreen.getCursorScreenPoint(), win: { x, y } };
+  dragBase = { win: { x, y } };
 });
-ipcMain.on('pet-drag-move', () => {
+ipcMain.on('pet-drag-move', (_e, dx, dy) => {
   if (!petWin || petWin.isDestroyed() || !dragBase) return;
-  const { screen: electronScreen } = require('electron');
-  const c = electronScreen.getCursorScreenPoint();
-  petWin.setPosition(dragBase.win.x + (c.x - dragBase.cursor.x), dragBase.win.y + (c.y - dragBase.cursor.y));
+  petWin.setPosition(dragBase.win.x + dx, dragBase.win.y + dy);
 });
 
 app.whenReady().then(async () => {

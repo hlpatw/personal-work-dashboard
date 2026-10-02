@@ -28,12 +28,24 @@
       border: none;
       background: transparent;
       padding: 0;
+      outline: none;
+      display: block;
+      position: relative;
     }
     .dog:active { cursor: grabbing; }
-    .dog svg { display: block; image-rendering: pixelated; }
-    .frame-b { display: none; }
-    .excited .frame-a { display: none; }
-    .excited .frame-b { display: block; }
+    /* 两帧同位叠放，靠可见性切换，避免布局抖动 */
+    .dog svg {
+      position: absolute;
+      inset: 0;
+      width: 46px;
+      height: 42px;
+      display: block;
+      image-rendering: pixelated;
+      pointer-events: none;
+    }
+    .frame-b { visibility: hidden; }
+    .excited .frame-a { visibility: hidden; }
+    .excited .frame-b { visibility: visible; }
   </style>
 </head>
 <body>
@@ -119,7 +131,9 @@
   </div>
   <script>
     const dog = document.getElementById('dog');
-    const desktop = window.desktop;
+    // 注意：不能声明 `const desktop`——preload 的 contextBridge 已在全局注入同名标识符，
+    // 重复声明会导致整块脚本解析失败（SyntaxError），所有交互失效。直接使用 window.desktop。
+    const bridge = window.desktop;
 
     // 两帧动画：常态 ↔ 兴奋（拖动时立即兴奋）
     let excited = false;
@@ -139,40 +153,45 @@
     };
     scheduleIdle();
 
-    // 拖动：按下位移>3px 即进入拖动态；原地点击 = 开关面板
+    // 拖动：按下位移>3px 即进入拖动态；原地点击 = 开关面板。
+    // 关键：用 Pointer Events + setPointerCapture——指针移出小窗口后事件仍持续送达，
+    // 拖动不会在小窗口边缘断线。位移用 clientX/Y 判定（不依赖 screen 坐标，
+    // 对合成输入与真人操作都可靠）。
     let pressed = false;
     let dragging = false;
     let startX = 0;
     let startY = 0;
 
-    dog.addEventListener('mousedown', (e) => {
+    dog.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
       pressed = true;
       dragging = false;
-      startX = e.screenX;
-      startY = e.screenY;
+      startX = e.clientX;
+      startY = e.clientY;
+      try { dog.setPointerCapture(e.pointerId); } catch (_) { /* 合成事件无捕获 */ }
     });
 
-    window.addEventListener('mousemove', (e) => {
+    dog.addEventListener('pointermove', (e) => {
       if (!pressed) return;
-      const dx = e.screenX - startX;
-      const dy = e.screenY - startY;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
       if (!dragging && Math.hypot(dx, dy) > 3) {
         dragging = true;
         setExcited(true);
-        desktop?.dragStart();
+        bridge?.dragStart();
       }
-      if (dragging) desktop?.dragMove();
+      if (dragging) bridge?.dragMove(dx, dy);
     });
 
-    window.addEventListener('mouseup', () => {
+    dog.addEventListener('pointerup', (e) => {
       if (!pressed) return;
       pressed = false;
+      try { dog.releasePointerCapture(e.pointerId); } catch (_) { /* 已释放 */ }
       if (!dragging) {
         // 点击瞬间也开心一下
         setExcited(true);
         setTimeout(() => { if (!dragging) setExcited(false); }, 1200);
-        desktop?.toggleDashboard();
+        bridge?.toggleDashboard();
       } else {
         setExcited(false);
       }
@@ -181,7 +200,7 @@
 
     window.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      desktop?.openMenu();
+      bridge?.openMenu();
     });
   </script>
 </body>

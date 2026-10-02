@@ -6,10 +6,8 @@ contextBridge.exposeInMainWorld('desktop', {
   toggleDashboard: () => ipcRenderer.send('toggle-dashboard'),
   /** 右键宠物：弹出菜单 */
   openMenu: () => ipcRenderer.send('pet-menu'),
-  /** 拖动开始：记录光标与窗口初始位置 */
+  /** 拖动开始：记录窗口初始位置 */
   dragStart: () => ipcRenderer.send('pet-drag-start'),
-  /** 拖动中：主进程按光标位移移动窗口 */
-  dragMove: () => ipcRenderer.send('pet-drag-move'),
-  /** 拖动结束 */
-  dragEnd: () => ipcRenderer.send('pet-drag-move'),
+  /** 拖动中：按指针位移增量（dx,dy）移动窗口 */
+  dragMove: (dx, dy) => ipcRenderer.send('pet-drag-move', Math.round(dx), Math.round(dy)),
 });
