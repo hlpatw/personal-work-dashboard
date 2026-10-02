@@ -25,6 +25,36 @@ export interface Task {
   due_date: string | null;
   completed_at: string | null;
   estimated_minutes: number | null;
+  tags: string[];
+  goal_id: number | null;
+  subtask_total: number;
+  subtask_done: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubtaskInput {
+  title: string;
+  done?: boolean;
+}
+
+export interface Subtask extends SubtaskInput {
+  id: number;
+  task_id: number;
+  done: boolean;
+  sort_order: number;
+}
+
+export type GoalStatus = 'active' | 'done' | 'archived';
+
+export interface Goal {
+  id: number;
+  title: string;
+  note: string;
+  target_date: string | null;
+  status: GoalStatus;
+  task_total: number;
+  task_done: number;
   created_at: string;
   updated_at: string;
 }

@@ -11,7 +11,6 @@
       overflow: hidden;
       font-family: system-ui, 'Segoe UI', 'Microsoft YaHei', sans-serif;
       user-select: none;
-      -webkit-app-region: drag;          /* 整卡拖动，脸可点击 */
       background: transparent;
     }
     .stage {
@@ -21,116 +20,155 @@
       align-items: center;
       justify-content: center;
     }
-    /* 高级感：一颗细腻的渐变光球，微表情，克制留白 */
-    .orb {
-      position: relative;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background:
-        radial-gradient(34% 26% at 33% 25%, rgba(255, 255, 255, 0.65), transparent 72%),
-        linear-gradient(150deg, #ff9cbf 0%, #f2689c 52%, #d94a80 100%);
-      box-shadow:
-        0 4px 14px rgba(217, 74, 128, 0.45),
-        inset -2px -4px 8px rgba(140, 20, 60, 0.35),
-        inset 2px 3px 6px rgba(255, 255, 255, 0.5),
-        inset 0 0 1.5px rgba(255, 255, 255, 0.6);
-      animation: breathe 3.6s ease-in-out infinite;
-      transition: filter 0.2s ease;
-      -webkit-app-region: no-drag;
-      cursor: pointer;
+    /* 像素小猫：两帧呼吸（尾巴摆动） */
+    .cat {
+      width: 44px;
+      height: 40px;
+      cursor: grab;
       border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: transparent;
+      padding: 0;
     }
-    /* 小而亮的镜面高光点，赋予果冻感 */
-    .orb::after {
-      content: '';
-      position: absolute;
-      top: 20%;
-      left: 28%;
-      width: 6px;
-      height: 4px;
-      background: #fff;
-      border-radius: 50%;
-      filter: blur(0.2px);
-      transform: rotate(-22deg);
-      box-shadow: 0 0 3px rgba(255, 255, 255, 0.9);
-      pointer-events: none;
+    .cat:active { cursor: grabbing; }
+    .cat svg { display: block; image-rendering: pixelated; }
+    .frame-b { display: none; }
+    .breathing .frame-a { display: none; }
+    .breathing .frame-b { display: block; }
+    @keyframes breatheFrames {
+      0%, 46% { /* 帧 A */ }
+      50%, 96% { /* 帧 B */ }
     }
-    .orb:hover { filter: brightness(1.08) saturate(1.05); }
-    .orb:active { transform: scale(0.93); }
-    .face {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      margin-top: 3px;
-    }
-    .eyes { display: flex; gap: 9px; }
-    .eye {
-      position: relative;
-      width: 4.5px;
-      height: 6px;
-      background: #52333d;
-      border-radius: 50%;
-      animation: blink 5.2s infinite;
-    }
-    .eye::after {
-      content: '';
-      position: absolute;
-      top: 0.6px;
-      right: 0.6px;
-      width: 1.6px;
-      height: 1.6px;
-      background: #fff;
-      border-radius: 50%;
-    }
-    .smile {
-      width: 7.5px;
-      height: 4px;
-      border: 1.8px solid #52333d;
-      border-top: none;
-      border-radius: 0 0 8px 8px;
-    }
-    .ring {
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 156, 191, 0.35);
-      animation: pulse 3.6s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes breathe {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.045); }
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.55; }
-      50% { transform: scale(1.1); opacity: 0.15; }
-    }
-    @keyframes blink {
-      0%, 93%, 100% { transform: scaleY(1); }
-      96% { transform: scaleY(0.08); }
-    }
+    /* JS 驱动帧切换更可靠：这里只做柔和的整体微缩 */
+    .cat { transition: transform 0.15s ease; }
   </style>
 </head>
 <body>
   <div class="stage">
-    <button class="orb" title="点我打开面板 · 拖动移动 · 右键菜单" aria-label="打开面板">
-      <span class="ring"></span>
-      <span class="face">
-        <span class="eyes"><span class="eye"></span><span class="eye"></span></span>
-        <span class="smile"></span>
-      </span>
+    <button class="cat" id="cat" title="点亮开面板 · 按住拖动" aria-label="打开面板">
+      <!-- 帧 A：常态（尾巴向右下） -->
+      <svg class="frame-a" width="44" height="40" viewBox="0 0 22 20" shape-rendering="crispEdges" aria-hidden="true">
+        <g>
+          <!-- 耳朵 -->
+          <rect x="3" y="1" width="2" height="2" fill="#f6c39a"/>
+          <rect x="5" y="2" width="1" height="1" fill="#f6c39a"/>
+          <rect x="16" y="1" width="2" height="2" fill="#f6c39a"/>
+          <rect x="16" y="2" width="1" height="1" fill="#f6c39a"/>
+          <rect x="4" y="2" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="16" y="2" width="1" height="1" fill="#f2a9c2"/>
+          <!-- 头 -->
+          <rect x="3" y="3" width="14" height="8" fill="#f6c39a"/>
+          <rect x="2" y="4" width="1" height="6" fill="#f6c39a"/>
+          <rect x="17" y="4" width="1" height="6" fill="#f6c39a"/>
+          <!-- 条纹 -->
+          <rect x="7" y="3" width="1" height="1" fill="#e8a678"/>
+          <rect x="10" y="3" width="2" height="1" fill="#e8a678"/>
+          <rect x="14" y="3" width="1" height="1" fill="#e8a678"/>
+          <!-- 眼睛（闭合弧线的像素表现：两粒黑豆 + 高光） -->
+          <rect x="6" y="6" width="2" height="2" fill="#3d2f28"/>
+          <rect x="13" y="6" width="2" height="2" fill="#3d2f28"/>
+          <rect x="6" y="6" width="1" height="1" fill="#fff"/>
+          <rect x="13" y="6" width="1" height="1" fill="#fff"/>
+          <!-- 鼻子与嘴 -->
+          <rect x="10" y="8" width="1" height="1" fill="#e88aa5"/>
+          <rect x="9" y="9" width="1" height="1" fill="#3d2f28"/>
+          <rect x="11" y="9" width="1" height="1" fill="#3d2f28"/>
+          <!-- 腮红 -->
+          <rect x="4" y="8" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="16" y="8" width="1" height="1" fill="#f2a9c2"/>
+          <!-- 身体 -->
+          <rect x="4" y="11" width="12" height="6" fill="#f6c39a"/>
+          <rect x="5" y="17" width="2" height="1" fill="#e8a678"/>
+          <rect x="9" y="17" width="2" height="1" fill="#e8a678"/>
+          <rect x="13" y="17" width="2" height="1" fill="#e8a678"/>
+          <!-- 前爪 -->
+          <rect x="6" y="16" width="2" height="1" fill="#fbd9b8"/>
+          <rect x="12" y="16" width="2" height="1" fill="#fbd9b8"/>
+          <!-- 尾巴 A：向右上翘 -->
+          <rect x="16" y="13" width="1" height="2" fill="#f6c39a"/>
+          <rect x="17" y="12" width="2" height="1" fill="#f6c39a"/>
+        </g>
+      </svg>
+      <!-- 帧 B：眨眼（尾巴放平） -->
+      <svg class="frame-b" width="44" height="40" viewBox="0 0 22 20" shape-rendering="crispEdges" aria-hidden="true">
+        <g>
+          <rect x="3" y="1" width="2" height="2" fill="#f6c39a"/>
+          <rect x="5" y="2" width="1" height="1" fill="#f6c39a"/>
+          <rect x="16" y="1" width="2" height="2" fill="#f6c39a"/>
+          <rect x="16" y="2" width="1" height="1" fill="#f6c39a"/>
+          <rect x="4" y="2" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="16" y="2" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="3" y="3" width="14" height="8" fill="#f6c39a"/>
+          <rect x="2" y="4" width="1" height="6" fill="#f6c39a"/>
+          <rect x="17" y="4" width="1" height="6" fill="#f6c39a"/>
+          <rect x="7" y="3" width="1" height="1" fill="#e8a678"/>
+          <rect x="10" y="3" width="2" height="1" fill="#e8a678"/>
+          <rect x="14" y="3" width="1" height="1" fill="#e8a678"/>
+          <!-- 眯眼（横向 1px） -->
+          <rect x="6" y="7" width="2" height="1" fill="#3d2f28"/>
+          <rect x="13" y="7" width="2" height="1" fill="#3d2f28"/>
+          <rect x="10" y="8" width="1" height="1" fill="#e88aa5"/>
+          <rect x="9" y="9" width="1" height="1" fill="#3d2f28"/>
+          <rect x="11" y="9" width="1" height="1" fill="#3d2f28"/>
+          <rect x="4" y="8" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="16" y="8" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="4" y="11" width="12" height="6" fill="#f6c39a"/>
+          <rect x="5" y="17" width="2" height="1" fill="#e8a678"/>
+          <rect x="9" y="17" width="2" height="1" fill="#e8a678"/>
+          <rect x="13" y="17" width="2" height="1" fill="#e8a678"/>
+          <rect x="6" y="16" width="2" height="1" fill="#fbd9b8"/>
+          <rect x="12" y="16" width="2" height="1" fill="#fbd9b8"/>
+          <!-- 尾巴 B：放平 -->
+          <rect x="16" y="15" width="3" height="1" fill="#f6c39a"/>
+        </g>
+      </svg>
     </button>
   </div>
   <script>
-    document.querySelector('.orb').addEventListener('click', () => window.desktop?.toggleDashboard());
+    const cat = document.getElementById('cat');
+    const desktop = window.desktop;
+
+    // 呼吸：帧 A ↔ 帧 B（600ms 节奏，克制不吵）
+    let frame = 0;
+    setInterval(() => {
+      frame = 1 - frame;
+      cat.classList.toggle('breathing', frame === 1);
+    }, 900);
+
+    // 按下即拖动（位移>3px 进入拖动态）；原地点击 = 开关面板
+    let pressed = false;
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    cat.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      pressed = true;
+      dragging = false;
+      startX = e.screenX;
+      startY = e.screenY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!pressed) return;
+      const dx = e.screenX - startX;
+      const dy = e.screenY - startY;
+      if (!dragging && Math.hypot(dx, dy) > 3) {
+        dragging = true;
+        desktop?.dragStart();
+      }
+      if (dragging) desktop?.dragMove();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!pressed) return;
+      pressed = false;
+      if (!dragging) desktop?.toggleDashboard();
+      dragging = false;
+    });
+
     window.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      window.desktop?.openMenu();
+      desktop?.openMenu();
     });
   </script>
 </body>

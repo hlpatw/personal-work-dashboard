@@ -23,6 +23,21 @@ let petWin = null;
 let dashWin = null;
 let quitting = false;
 
+/** 打包模式：首次运行时尝试导入开发目录的数据库（个人机器的数据迁移） */
+function importDevDb(dbPath) {
+  const fs = require('node:fs');
+  try {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    const DEV_DB = 'D:\\工作\\个人工作面板\\server\\data\\dashboard.db';
+    if (!fs.existsSync(dbPath) && fs.existsSync(DEV_DB)) {
+      fs.copyFileSync(DEV_DB, dbPath);
+      console.log('[desktop] 已从开发目录导入历史数据');
+    }
+  } catch (err) {
+    console.error(`[desktop] 数据导入跳过: ${err.message}`);
+  }
+}
+
 /** 探测 API 是否已就绪（agent:false 避免连接池复用启动中端口的诡异挂起） */
 function probe(timeoutMs = 1500) {
   return new Promise((resolve) => {
@@ -45,6 +60,25 @@ async function ensureServer() {
     console.log('[desktop] 检测到已在运行的后端，直接复用');
     return;
   }
+
+  // 打包模式：后端编译产物在主进程内直接运行（无子进程、无系统 Node 依赖）
+  if (app.isPackaged) {
+    const bundle = path.join(process.resourcesPath, 'server-bundle', 'app.cjs');
+    if (!existsSync(bundle)) throw new Error('缺少内置后端文件，请重新安装');
+    const dbPath = path.join(app.getPath('userData'), 'data', 'dashboard.db');
+    importDevDb(dbPath);
+    const { createApp } = require(bundle);
+    const expressApp = createApp(dbPath, {
+      staticDir: path.join(process.resourcesPath, 'client-dist'),
+    });
+    await new Promise((resolve, reject) => {
+      const srv = expressApp.listen(PORT, resolve);
+      srv.on('error', reject);
+    });
+    console.log('[desktop] 内置后端已启动（进程内）');
+    return;
+  }
+
   const tsxCli = path.join(ROOT, 'node_modules', 'tsx', 'dist', 'cli.mjs');
   if (!existsSync(tsxCli)) throw new Error('未找到 tsx，请先在项目根目录执行 npm install');
   // 注意：用「cwd + 纯 ASCII 相对路径」拉起（实测从 Electron 主进程 spawn
@@ -88,10 +122,10 @@ async function ensureServer() {
 function createPetWindow() {
   const { workArea } = require('electron').screen.getPrimaryDisplay();
   petWin = new BrowserWindow({
-    width: 66,
-    height: 66,
-    x: workArea.x + workArea.width - 82,
-    y: workArea.y + workArea.height - 82,
+    width: 60,
+    height: 62,
+    x: workArea.x + workArea.width - 76,
+    y: workArea.y + workArea.height - 76,
     frame: false,
     transparent: true,
     resizable: false,
@@ -196,6 +230,22 @@ async function selfCheck() {
     app.exit(0);
   }
 }
+
+/** 宠物拖动：光标驱动窗口移动（球体即拖动手柄） */
+let dragOrigin = null; // { cursor: {x,y}, win: {x,y} }
+ipcMain.on('pet-drag-start', () => {
+  if (!petWin) return;
+  const { screen: electronScreen } = require('electron');
+  const cursor = electronScreen.getCursorScreenPoint();
+  const [x, y] = petWin.getPosition();
+  dragOrigin = { cursor, win: { x, y } };
+});
+ipcMain.on('pet-drag-move', () => {
+  if (!petWin || !dragOrigin) return;
+  const { screen: electronScreen } = require('electron');
+  const cursor = electronScreen.getCursorScreenPoint();
+  petWin.setPosition(dragOrigin.win.x + (cursor.x - dragOrigin.cursor.x), dragOrigin.win.y + (cursor.y - dragOrigin.cursor.y));
+});
 
 app.whenReady().then(async () => {
   ipcMain.on('toggle-dashboard', toggleDashboard);

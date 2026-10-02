@@ -13,7 +13,7 @@ export default function PageHeader({ title, subtitle, actions }: Props) {
       <div className="min-w-0">
         <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
         {subtitle && (
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
             {subtitle}
           </p>
         )}

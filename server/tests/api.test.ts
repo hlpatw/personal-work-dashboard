@@ -137,6 +137,75 @@ describe('tasks', () => {
   });
 });
 
+describe('标签与子任务', () => {
+  it('创建带标签和子任务的任务', async () => {
+    const res = await request(app).post('/api/tasks').send({
+      title: '带标签任务',
+      tags: ['重要', '联调'],
+      subtasks: [{ title: '步骤一' }, { title: '步骤二', done: true }],
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.tags).toEqual(['重要', '联调']);
+    expect(res.body.subtask_total).toBe(2);
+    expect(res.body.subtask_done).toBe(1);
+
+    const subs = await request(app).get(`/api/tasks/${res.body.id}/subtasks`);
+    expect(subs.body).toHaveLength(2);
+    expect(subs.body[1].done).toBe(true);
+  });
+
+  it('按标签筛选', async () => {
+    await request(app).post('/api/tasks').send({ title: 'a', tags: ['重要'] });
+    await request(app).post('/api/tasks').send({ title: 'b', tags: ['日常'] });
+    const res = await request(app).get('/api/tasks?tag=重要');
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].title).toBe('a');
+  });
+
+  it('PUT 整体替换子任务', async () => {
+    const created = await request(app)
+      .post('/api/tasks')
+      .send({ title: 'c', subtasks: [{ title: '旧1' }, { title: '旧2' }] });
+    const updated = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: 'c', subtasks: [{ title: '新1', done: true }] });
+    expect(updated.body.subtask_total).toBe(1);
+    expect(updated.body.subtask_done).toBe(1);
+  });
+});
+
+describe('长期目标', () => {
+  it('目标 CRUD、进度聚合与删除解除关联', async () => {
+    const g = await request(app)
+      .post('/api/goals')
+      .send({ title: '读完三本书', target_date: '2026-12-31' });
+    expect(g.status).toBe(201);
+    expect(g.body.task_total).toBe(0);
+
+    const t1 = await request(app).post('/api/tasks').send({ title: '书1', goal_id: g.body.id });
+    await request(app).post('/api/tasks').send({ title: '书2', goal_id: g.body.id, status: 'done' });
+
+    const list = await request(app).get('/api/goals');
+    const goal = list.body.find((x: { id: number }) => x.id === g.body.id);
+    expect(goal.task_total).toBe(2);
+    expect(goal.task_done).toBe(1);
+
+    // 状态流转
+    const done = await request(app).patch(`/api/goals/${g.body.id}/status`).send({ status: 'done' });
+    expect(done.body.status).toBe('done');
+
+    // 删除目标 → 任务解除关联
+    await request(app).delete(`/api/goals/${g.body.id}`);
+    const t = await request(app).get(`/api/tasks/${t1.body.id}`);
+    expect(t.body.goal_id).toBeNull();
+  });
+
+  it('目标标题为空返回 400', async () => {
+    const res = await request(app).post('/api/goals').send({ title: ' ' });
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('schedules', () => {
   it('创建日程 201', async () => {
     const res = await request(app)

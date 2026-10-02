@@ -2,11 +2,15 @@
   "name": "desktop",
   "version": "1.0.0",
   "private": true,
+  "description": "个人工作面板桌面版",
+  "author": "Personal Work Dashboard",
   "main": "main.js",
   "scripts": {
-    "desktop": "electron ."
+    "desktop": "electron .",
+    "dist:exe": "electron-builder --win nsis"
   },
   "devDependencies": {
-    "electron": "^39.0.0"
+    "electron": "39.8.10",
+    "electron-builder": "^26.15.3"
   }
 }

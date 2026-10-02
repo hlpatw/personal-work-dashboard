@@ -7,9 +7,10 @@ import { initDb } from './db.js';
 import taskRoutes from './routes/tasks.js';
 import scheduleRoutes from './routes/schedules.js';
 import statsRoutes from './routes/stats.js';
+import goalRoutes from './routes/goals.js';
 
 /** 构造 Express 应用；dbPath 传 ':memory:' 用于测试 */
-export function createApp(dbPath: string) {
+export function createApp(dbPath: string, opts?: { staticDir?: string }) {
   const db = initDb(dbPath);
   const app = express();
   app.use(express.json());
@@ -31,9 +32,13 @@ export function createApp(dbPath: string) {
   app.use('/api/tasks', taskRoutes(db));
   app.use('/api/schedules', scheduleRoutes(db));
   app.use('/api/stats', statsRoutes(db));
+  app.use('/api/goals', goalRoutes(db));
 
-  // 桌面模式 / 生产模式：若前端已构建（client/dist），直接托管并做 SPA 回退
-  const distDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'client', 'dist');
+  // 桌面模式 / 生产模式：托管前端构建产物并做 SPA 回退
+  // 默认开发仓库的 client/dist；打包模式由调用方传入 staticDir
+  const distDir =
+    opts?.staticDir ??
+    join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'client', 'dist');
   if (existsSync(distDir)) {
     app.use(express.static(distDir));
     app.use((req: Request, res: Response, next: NextFunction) => {

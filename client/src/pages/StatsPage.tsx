@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { startOfWeek, addWeeks, format, parseISO, isSameWeek } from 'date-fns';
 import { fetchSummary, fetchDailyCompletions, fetchCategoryStats } from '../api/stats';
+import { fetchGoals } from '../api/goals';
 import { useThemeStore } from '../stores/theme';
 import { formatCN } from '../lib/date';
 import { useCountUp } from '../lib/useCountUp';
@@ -23,7 +24,7 @@ import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
 
 // 图表颜色：已通过色盲安全与对比度验证
-// （浅色基于 #ffffff 表面、深色基于 #1c1917 表面；分类槽位固定，色彩跟随实体）
+// （浅色基于 #ffffff 表面、深色基于 #17171b 表面；分类槽位固定，色彩跟随实体）
 const SERIES = {
   pink: { light: '#db2777', dark: '#ec4899' },
   blue: { light: '#2a78d6', dark: '#3987e5' },
@@ -54,6 +55,9 @@ export default function StatsPage() {
     queryKey: ['stats', 'categories'],
     queryFn: fetchCategoryStats,
   });
+  const { data: goals } = useQuery({ queryKey: ['goals'], queryFn: () => fetchGoals() });
+  const totalGoals = goals?.length ?? 0;
+  const doneGoals = goals?.filter((g) => g.status === 'done').length ?? 0;
 
   // 周聚合（周一为一周开始），补齐空周
   const weeks = useMemo(() => {
@@ -85,11 +89,11 @@ export default function StatsPage() {
   const totalDone = (categories ?? []).reduce((s, x) => s + x.done, 0);
   const overallRate = totalTasks === 0 ? 0 : Math.round((totalDone / totalTasks) * 100);
 
-  // 表面与墨色（与卡片主题一致，暖石板基调）
-  const surface = mode === 'dark' ? '#1c1917' : '#ffffff';
-  const gridLine = mode === 'dark' ? '#2b2523' : '#f0e2e5';
-  const axisInk = '#8f857c';
-  const secondaryInk = mode === 'dark' ? '#c7c1b9' : '#55504a';
+  // 表面与墨色（与专业风卡片一致：亮 #ffffff / 暗 #17171b）
+  const surface = mode === 'dark' ? '#17171b' : '#ffffff';
+  const gridLine = mode === 'dark' ? '#26262b' : '#ececef';
+  const axisInk = '#8b8b93';
+  const secondaryInk = mode === 'dark' ? '#c5c5cc' : '#4b4b52';
 
   const pieData = (categories ?? []).map((x) => ({ ...x, fill: c(CATEGORY_COLORS[x.category] ?? SERIES.pink) }));
 
@@ -98,23 +102,25 @@ export default function StatsPage() {
       <PageHeader title="统计" subtitle={`近 ${WEEKS} 周完成趋势与分类总览`} />
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="总完成率" value={overallRate} suffix="%" hint={`${totalDone} / ${totalTasks} 项任务`} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <StatCard label="总完成率" valueColor="text-rose-500 dark:text-rose-400" value={overallRate} suffix="%" hint={`${totalDone} / ${totalTasks} 项任务`} />
         <StatCard
           label="本周完成"
+          valueColor="text-emerald-500 dark:text-emerald-400"
           value={thisWeekCount}
           hint={weekDelta === 0 ? '与上周持平' : `较上周 ${weekDelta > 0 ? '+' : ''}${weekDelta}`}
           delta={weekDelta}
         />
-        <StatCard label="逾期任务" value={summary?.overdue_count ?? 0} hint="未完成且已过截止日" />
-        <StatCard label="任务总数" value={totalTasks} hint="全部任务（含已完成）" />
+        <StatCard label="逾期任务" valueColor="text-red-500 dark:text-red-400" value={summary?.overdue_count ?? 0} hint="未完成且已过截止日" />
+        <StatCard label="任务总数" valueColor="" value={totalTasks} hint="全部任务（含已完成）" />
+        <StatCard label="完成目标" valueColor="" value={doneGoals} hint={`共 ${totalGoals} 个目标`} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* 每周完成数 */}
         <Card className="p-4">
           <h2 className="text-sm font-semibold">每周完成任务数</h2>
-          <p className="mb-2 text-xs text-stone-400 dark:text-stone-500">近 {WEEKS} 周（周一为每周第一天）</p>
+          <p className="mb-2 text-xs text-zinc-400 dark:text-zinc-500">近 {WEEKS} 周（周一为每周第一天）</p>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={weeks} margin={{ top: 18, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid stroke={gridLine} vertical={false} />
@@ -169,7 +175,7 @@ export default function StatsPage() {
         {/* 分类分布 */}
         <Card className="flex flex-col p-4">
           <h2 className="text-sm font-semibold">分类分布</h2>
-          <p className="mb-2 text-xs text-stone-400 dark:text-stone-500">各分类任务占比</p>
+          <p className="mb-2 text-xs text-zinc-400 dark:text-zinc-500">各分类任务占比</p>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Tooltip
@@ -209,7 +215,7 @@ export default function StatsPage() {
         <h2 className="mb-3 text-sm font-semibold">分类明细</h2>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200 text-left text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
+            <tr className="border-b border-zinc-200 text-left text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
               <th className="py-2 font-medium">分类</th>
               <th className="py-2 text-right font-medium">任务数</th>
               <th className="py-2 text-right font-medium">已完成</th>
@@ -218,7 +224,7 @@ export default function StatsPage() {
           </thead>
           <tbody>
             {(categories ?? []).map((x) => (
-              <tr key={x.category} className="border-b border-stone-100 last:border-0 dark:border-stone-800/60">
+              <tr key={x.category} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800/60">
                 <td className="py-2">
                   <span className="inline-flex items-center gap-2">
                     <span
@@ -245,7 +251,7 @@ export default function StatsPage() {
             ))}
             {(categories ?? []).length === 0 && (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-stone-400">
+                <td colSpan={4} className="py-8 text-center text-zinc-400">
                   暂无数据
                 </td>
               </tr>
@@ -259,12 +265,14 @@ export default function StatsPage() {
 
 function StatCard({
   label,
+  valueColor,
   value,
   suffix = '',
   hint,
   delta,
 }: {
   label: string;
+  valueColor: string;
   value: number;
   suffix?: string;
   hint: string;
@@ -273,14 +281,18 @@ function StatCard({
   const animated = useCountUp(value);
   const deltaTone =
     delta === undefined || delta === 0
-      ? 'text-stone-400 dark:text-stone-500'
+      ? 'text-zinc-400 dark:text-zinc-500'
       : delta > 0
         ? 'text-emerald-600 dark:text-emerald-400'
         : 'text-red-500 dark:text-red-400';
   return (
     <Card className="p-4">
-      <p className="text-xs text-stone-500 dark:text-stone-400">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tracking-tight">
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p
+        className={`mt-1 text-2xl font-semibold tracking-tight ${
+          valueColor || 'text-zinc-900 dark:text-zinc-50'
+        }`}
+      >
         {animated}
         {suffix}
       </p>

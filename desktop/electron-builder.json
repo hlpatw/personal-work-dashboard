@@ -1,0 +1,21 @@
+{
+  "appId": "com.personal.workdashboard",
+  "productName": "个人工作面板",
+  "directories": {
+    "output": "../release"
+  },
+  "files": ["main.js", "preload.js", "pet.html"],
+  "extraResources": [
+    { "from": "server-bundle", "to": "server-bundle" },
+    { "from": "../client/dist", "to": "client-dist" }
+  ],
+  "win": {
+    "target": [{ "target": "nsis", "arch": ["x64"] }]
+  },
+  "nsis": {
+    "oneClick": true,
+    "perMachine": false,
+    "deleteAppDataOnUninstall": false,
+    "artifactName": "个人工作面板-安装包-${version}.exe"
+  }
+}

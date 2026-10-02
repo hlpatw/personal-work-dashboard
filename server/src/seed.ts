@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { initDb, run } from './db.js';
+import { initDb, run, rows } from './db.js';
 
 /** 生成示例数据：约 30 条跨两周的任务 + 一周日程 */
 const dataDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'data');
@@ -119,6 +119,40 @@ for (const [title, day, start, end, location] of schedules) {
   );
 }
 
+// ---- 长期目标 ----
+run(db, 'DELETE FROM goals');
+const goalDefs: Array<[string, string, number, string]> = [
+  ['Q4 学完 React 基础', '完成线上课程并做三个练习项目', 60, 'active'],
+  ['年内读完 12 本书', '每月一本，笔记归档', 90, 'active'],
+  ['建立晨跑习惯', '连续三周每周三次', -5, 'done'],
+];
+for (const [title, note, offset, status] of goalDefs) {
+  run(
+    db,
+    'INSERT INTO goals (title, note, target_date, status) VALUES (?, ?, ?, ?)',
+    title,
+    note,
+    dateStr(offset),
+    status
+  );
+}
+
+// 关联任务到目标 + 补标签
+run(db, `UPDATE tasks SET goal_id = 1, tags = '["课程","前端"]' WHERE title LIKE '%课程%' OR title LIKE '%React%' OR title LIKE '%技术方案%'`);
+run(db, `UPDATE tasks SET goal_id = 2 WHERE title LIKE '%书%' OR title LIKE '%单词%' OR title LIKE '%《'`);
+run(db, `UPDATE tasks SET tags = '["每日"]' WHERE title LIKE '%今日%'`);
+run(db, `UPDATE tasks SET tags = '["重要"]' WHERE priority = 'urgent'`);
+
+// 给技术方案任务挂子任务
+const plan = rows<{ id: number }>(db, "SELECT id FROM tasks WHERE title LIKE '%技术方案%'");
+for (const t of plan) {
+  const items = ['调研现有方案', '写设计文档', '评审', '落地实现'];
+  items.forEach((title, i) => {
+    run(db, 'INSERT INTO subtasks (task_id, title, done, sort_order) VALUES (?, ?, ?, ?)', t.id, title, i < 2 ? 1 : 0, i);
+  });
+}
+
 const total = (db.prepare('SELECT COUNT(*) AS c FROM tasks').get() as { c: number }).c;
 const totalSchedules = (db.prepare('SELECT COUNT(*) AS c FROM schedules').get() as { c: number }).c;
-console.log(`[seed] 已写入 ${total} 条任务、${totalSchedules} 条日程`);
+const totalGoals = (db.prepare('SELECT COUNT(*) AS c FROM goals').get() as { c: number }).c;
+console.log(`[seed] 已写入 ${total} 条任务、${totalSchedules} 条日程、${totalGoals} 个目标`);

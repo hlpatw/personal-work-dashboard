@@ -6,6 +6,14 @@ export type TaskCategory = (typeof TASK_CATEGORIES)[number];
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
+export interface Subtask {
+  id: number;
+  task_id: number;
+  title: string;
+  done: boolean;
+  sort_order: number;
+}
+
 export interface Task {
   id: number;
   title: string;
@@ -16,14 +24,45 @@ export interface Task {
   due_date: string | null;
   completed_at: string | null;
   estimated_minutes: number | null;
+  tags: string[];
+  goal_id: number | null;
+  subtask_total: number;
+  subtask_done: number;
   created_at: string;
   updated_at: string;
 }
 
+export interface SubtaskInput {
+  title: string;
+  done?: boolean;
+}
+
 export type TaskInput = Pick<
   Task,
-  'title' | 'description' | 'category' | 'priority' | 'status' | 'due_date' | 'estimated_minutes'
->;
+  'title' | 'description' | 'category' | 'priority' | 'status' | 'due_date' | 'estimated_minutes' | 'tags' | 'goal_id'
+> & { subtasks: SubtaskInput[] };
+
+export type GoalStatus = 'active' | 'done' | 'archived';
+
+export interface Goal {
+  id: number;
+  title: string;
+  note: string;
+  target_date: string | null;
+  status: GoalStatus;
+  task_total: number;
+  task_done: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type GoalInput = Pick<Goal, 'title' | 'note' | 'target_date' | 'status'>;
+
+export const GOAL_STATUS_LABELS: Record<GoalStatus, string> = {
+  active: '进行中',
+  done: '已完成',
+  archived: '已归档',
+};
 
 export interface Schedule {
   id: number;
@@ -77,16 +116,24 @@ export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   low: '低',
 };
 
+/** 分类展示：中性徽章（专业风） */
+export const CATEGORY_META: Record<string, { chip: string }> = {
+  工作: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
+  学习: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
+  生活: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
+  其他: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
+};
+
 /** 优先级圆点颜色 */
 export const PRIORITY_DOT: Record<TaskPriority, string> = {
   urgent: 'bg-red-500',
   high: 'bg-orange-500',
-  medium: 'bg-sky-500',
-  low: 'bg-stone-400',
+  medium: 'bg-zinc-400',
+  low: 'bg-zinc-300 dark:bg-zinc-600',
 };
 
 export const STATUS_BADGE: Record<TaskStatus, string> = {
-  todo: 'bg-stone-200 text-stone-700 dark:bg-stone-700/60 dark:text-stone-300',
-  in_progress: 'bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300',
-  done: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
+  todo: 'bg-black/[0.06] text-zinc-500 dark:bg-white/[0.08] dark:text-zinc-400',
+  in_progress: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
+  done: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
 };

@@ -68,6 +68,18 @@ export function IconStats({ className = 'h-[18px] w-[18px]' }: IconProps) {
   );
 }
 
+/** 目标：靶心 */
+export function IconTarget({ className = 'h-[18px] w-[18px]' }: IconProps) {
+  return base(
+    className,
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none" />
+    </>
+  );
+}
+
 /** 编辑：铅笔 */
 export function IconPencil({ className = 'h-4 w-4' }: IconProps) {
   return base(

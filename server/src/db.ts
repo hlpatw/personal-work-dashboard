@@ -31,6 +31,20 @@ export function initDb(path: string): Db {
     );
     INSERT OR IGNORE INTO users (id, username) VALUES (1, 'local');
 
+    -- 长期目标：跨数周~数月的大方向，任务通过 goal_id 归属
+    CREATE TABLE IF NOT EXISTS goals (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      title       TEXT    NOT NULL CHECK(length(trim(title)) > 0),
+      note        TEXT    NOT NULL DEFAULT '',
+      target_date TEXT,
+      status      TEXT    NOT NULL DEFAULT 'active' CHECK(status IN ('active','done','archived')),
+      user_id     INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
+      created_at  TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
+      updated_at  TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
+    CREATE INDEX IF NOT EXISTS idx_goals_user   ON goals(user_id);
+
     CREATE TABLE IF NOT EXISTS tasks (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
       title        TEXT    NOT NULL CHECK(length(trim(title)) > 0),
@@ -44,6 +58,8 @@ export function initDb(path: string): Db {
       due_date     TEXT,
       completed_at TEXT,
       estimated_minutes INTEGER,
+      tags         TEXT    NOT NULL DEFAULT '[]',
+      goal_id      INTEGER REFERENCES goals(id) ON DELETE SET NULL,
       user_id      INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
       created_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
       updated_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
@@ -51,6 +67,17 @@ export function initDb(path: string): Db {
     CREATE INDEX IF NOT EXISTS idx_tasks_status   ON tasks(status);
     CREATE INDEX IF NOT EXISTS idx_tasks_due      ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category);
+
+    -- 子任务清单：挂在任务下的勾选项
+    CREATE TABLE IF NOT EXISTS subtasks (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id    INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      title      TEXT    NOT NULL CHECK(length(trim(title)) > 0),
+      done       INTEGER NOT NULL DEFAULT 0 CHECK(done IN (0,1)),
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_subtasks_task ON subtasks(task_id);
 
     CREATE TABLE IF NOT EXISTS schedules (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,12 +94,15 @@ export function initDb(path: string): Db {
     CREATE INDEX IF NOT EXISTS idx_schedules_date ON schedules(date);
   `);
 
-  // 旧库迁移：为已存在的表补 user_id 列（存量数据归属本地用户）。
+  // 旧库迁移：为已存在的表补新列（存量数据归属本地用户）。
   // 必须在建 user 索引之前执行——旧表加列前，user_id 上无法建索引。
   migrateAddColumn(db, 'tasks', 'user_id', 'INTEGER NOT NULL DEFAULT 1');
   migrateAddColumn(db, 'schedules', 'user_id', 'INTEGER NOT NULL DEFAULT 1');
   // 预计完成时长（分钟），可空
   migrateAddColumn(db, 'tasks', 'estimated_minutes', 'INTEGER');
+  // 标签（JSON 数组文本）与目标关联
+  migrateAddColumn(db, 'tasks', 'tags', "TEXT NOT NULL DEFAULT '[]'");
+  migrateAddColumn(db, 'tasks', 'goal_id', 'INTEGER REFERENCES goals(id) ON DELETE SET NULL');
 
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_user     ON tasks(user_id);

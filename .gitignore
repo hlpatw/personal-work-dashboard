@@ -1,5 +1,7 @@
 node_modules/
 dist/
+release/
+desktop/server-bundle/
 *.local
 .claude/settings.local.json
 server/data/*.db

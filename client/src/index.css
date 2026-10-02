@@ -10,17 +10,21 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Plane 式专业风：暗色为默认（浅色为同体系灰白版） */
 body {
-  @apply bg-rose-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100 antialiased;
+  @apply bg-[#f7f7f8] text-[#1b1b1f] antialiased;
+}
+html.dark body {
+  @apply bg-[#0e0e11] text-[#e8e8ec];
 }
 
-/* 细滚动条，与主题协调（暖石板色调） */
+/* 细滚动条 */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(168 162 158 / 0.4) transparent;
+  scrollbar-color: rgb(120 120 130 / 0.35) transparent;
 }
-.dark * {
-  scrollbar-color: rgb(87 83 78 / 0.6) transparent;
+html.dark * {
+  scrollbar-color: rgb(120 120 130 / 0.25) transparent;
 }
 
 /* 路由切换的轻柔过渡 */
@@ -35,7 +39,7 @@ body {
   }
 }
 .page-fade {
-  animation: pageFade 0.3s ease both;
+  animation: pageFade 0.28s ease both;
 }
 @media (prefers-reduced-motion: reduce) {
   .page-fade {

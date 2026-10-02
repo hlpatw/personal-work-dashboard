@@ -11,6 +11,9 @@
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
     "desktop": "npm run desktop -w desktop",
+    "dist:server": "esbuild server/src/app.ts --bundle --platform=node --format=cjs --outfile=desktop/server-bundle/app.cjs --external:node:sqlite",
+    "dist:exe": "npm run dist:exe -w desktop",
+    "dist": "npm run build -w client && npm run dist:server && npm run dist:exe",
     "seed": "npm run seed -w server",
     "reset": "npm run reset -w server",
     "test": "npm test -w server",

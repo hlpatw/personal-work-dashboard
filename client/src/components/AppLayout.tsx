@@ -1,13 +1,11 @@
 import { Outlet, useLocation } from 'react-router';
 import Sidebar from './Sidebar';
 
-/** 自然光风格的柔和渐变背景（aurora），玻璃卡片的底色来源 */
+/** 专业风背景：仅顶部一抹极淡的玫瑰光晕 */
 function AuroraBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-      <div className="absolute -top-40 -left-32 h-[26rem] w-[26rem] rounded-full bg-rose-300/50 blur-3xl dark:bg-rose-500/10" />
-      <div className="absolute top-1/4 -right-40 h-[30rem] w-[30rem] rounded-full bg-violet-300/40 blur-3xl dark:bg-violet-500/10" />
-      <div className="absolute -bottom-48 left-1/3 h-[26rem] w-[26rem] rounded-full bg-amber-200/40 blur-3xl dark:bg-amber-500/[0.06]" />
+      <div className="absolute -top-56 left-1/2 h-[28rem] w-[46rem] -translate-x-1/2 rounded-full bg-rose-400/[0.07] blur-3xl dark:bg-rose-500/[0.05]" />
     </div>
   );
 }

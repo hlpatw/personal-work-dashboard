@@ -4,17 +4,24 @@ import { useThemeStore } from '../stores/theme';
 import { useProfileStore } from '../stores/profile';
 import { formatCN } from '../lib/date';
 import Modal from './Modal';
-import { IconCalendar, IconDashboard, IconPencil, IconStats, IconTasks } from './icons';
+import {
+  IconCalendar,
+  IconDashboard,
+  IconStats,
+  IconTarget,
+  IconTasks,
+} from './icons';
 
 const NAV_ITEMS = [
   { to: '/', label: '概览', icon: IconDashboard, end: true },
   { to: '/tasks', label: '任务', icon: IconTasks, end: false },
   { to: '/calendar', label: '日历', icon: IconCalendar, end: false },
+  { to: '/goals', label: '目标', icon: IconTarget, end: false },
   { to: '/stats', label: '统计', icon: IconStats, end: false },
 ];
 
 const inputCls =
-  'w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-rose-500 dark:border-stone-700 dark:bg-stone-800';
+  'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
 
 export default function Sidebar() {
   const theme = useThemeStore((s) => s.theme);
@@ -38,61 +45,58 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-stone-200/70 bg-white/70 py-4 backdrop-blur-xl dark:border-white/[0.06] dark:bg-stone-900/70 md:w-56 md:items-stretch md:px-3">
+    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-black/[0.06] bg-[#f2f2f4] py-4 dark:border-white/[0.05] dark:bg-[#0a0a0c] md:w-56 md:items-stretch md:px-3">
       {/* 个人区 */}
       <button
         onClick={openEdit}
-        className="mb-4 flex items-center justify-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors hover:bg-stone-100 dark:hover:bg-stone-800 md:justify-start"
+        className="mb-4 flex items-center justify-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.04] md:justify-start"
         title="编辑个人信息"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-400 text-sm font-semibold text-white shadow-sm">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-sm font-semibold text-rose-500 dark:text-rose-400">
           {nickname.slice(0, 1)}
         </span>
         <span className="hidden min-w-0 flex-col items-start md:flex">
-          <span className="w-full truncate text-sm font-semibold">{nickname}</span>
-          <span className="text-[10px] text-stone-400 dark:text-stone-500">点击编辑</span>
+          <span className="w-full truncate text-sm font-medium">{nickname}</span>
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">点击编辑</span>
         </span>
       </button>
 
-      <nav className="flex flex-1 flex-col gap-1">
+      <nav className="flex flex-1 flex-col gap-0.5">
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex items-center justify-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors md:justify-start ${
+              `flex items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors md:justify-start ${
                 isActive
-                  ? 'bg-rose-50 font-medium text-rose-600 dark:bg-rose-500/15 dark:text-rose-300'
-                  : 'text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800'
+                  ? 'bg-black/[0.06] font-medium text-zinc-900 dark:bg-white/[0.07] dark:text-white'
+                  : 'text-zinc-500 hover:bg-black/[0.035] hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.04] dark:hover:text-zinc-100'
               }`
             }
             title={item.label}
           >
-            <item.icon className="h-[18px] w-[18px] shrink-0" />
+            <item.icon className="h-[17px] w-[17px] shrink-0" />
             <span className="hidden md:inline">{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* 座右铭 + 日期：点击可编辑个人信息 */}
+      {/* 座右铭 + 日期：点击可编辑 */}
       <button
         onClick={openEdit}
-        className="group mb-2 hidden w-full items-start justify-between gap-1.5 rounded-xl bg-stone-50 px-3 py-2.5 text-left transition-colors hover:bg-stone-100 dark:bg-stone-800/60 dark:hover:bg-stone-800 md:flex"
+        className="group mb-2 hidden w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-black/[0.035] dark:hover:bg-white/[0.04] md:flex"
         title="编辑昵称与座右铭"
       >
-        <span className="flex min-w-0 flex-col items-start gap-0.5">
-          <span className="w-full truncate text-xs italic text-stone-600 dark:text-stone-300">「{motto}」</span>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400">
-            {formatCN(new Date(), 'yyyy年M月d日 EEEE')}
-          </span>
+        <span className="w-full truncate text-xs text-zinc-500 dark:text-zinc-400">「{motto}」</span>
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          {formatCN(new Date(), 'yyyy年M月d日 EEEE')}
         </span>
-        <IconPencil className="mt-0.5 h-3 w-3 shrink-0 text-stone-400 opacity-0 transition-opacity group-hover:opacity-100" />
       </button>
 
       <button
         onClick={toggle}
-        className="flex items-center justify-center gap-3 rounded-xl px-3 py-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+        className="flex items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-500 transition-colors hover:bg-black/[0.035] dark:text-zinc-400 dark:hover:bg-white/[0.04]"
         title="切换主题"
       >
         <span className="text-base">{theme === 'dark' ? '☀' : '☾'}</span>
@@ -103,7 +107,7 @@ export default function Sidebar() {
         <Modal title="个人信息" onClose={() => setEditing(false)}>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-stone-500">昵称</label>
+              <label className="mb-1 block text-xs font-medium text-zinc-500">昵称</label>
               <input
                 autoFocus
                 className={inputCls}
@@ -114,7 +118,7 @@ export default function Sidebar() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-stone-500">座右铭</label>
+              <label className="mb-1 block text-xs font-medium text-zinc-500">座右铭</label>
               <input
                 className={inputCls}
                 value={mottoDraft}
@@ -126,13 +130,13 @@ export default function Sidebar() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setEditing(false)}
-                className="rounded-lg px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
               >
                 取消
               </button>
               <button
                 onClick={save}
-                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500"
+                className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400"
               >
                 保存
               </button>
