@@ -189,7 +189,9 @@ function toggleDashboard() {
     createDashboardWindow();
     return;
   }
-  if (dashWin.isVisible() && dashWin.isFocused()) {
+  // 点狗切换：可见 → 隐藏；不可见 → 显示。不依赖焦点状态（否则焦点在
+  // 别的窗口时再点狗会变成"抢焦点"而不是关闭，不符合直觉）
+  if (dashWin.isVisible()) {
     dashWin.hide();
   } else {
     dashWin.show();
