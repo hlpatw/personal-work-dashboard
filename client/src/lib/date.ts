@@ -34,3 +34,16 @@ export function isToday(d: Date): boolean {
 export function addDaysStr(dateStr: string, days: number): string {
   return toDateStr(days >= 0 ? addDays(parseISO(dateStr), days) : subDays(parseISO(dateStr), -days));
 }
+
+/** 相对时间："刚刚" / "N 分钟前" / "N 小时前" / "N 天前" / "M月d日"（超过 30 天） */
+export function relativeTime(datetimeStr: string): string {
+  const diffMs = Date.now() - new Date(datetimeStr.replace(' ', 'T')).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes} 分钟前`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} 小时前`;
+  const days = Math.floor(hours / 24);
+  if (days <= 30) return `${days} 天前`;
+  return formatCN(datetimeStr.slice(0, 10), 'yyyy年M月d日');
+}

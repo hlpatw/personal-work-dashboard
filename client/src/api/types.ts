@@ -78,6 +78,26 @@ export interface Schedule {
 
 export type ScheduleInput = Pick<Schedule, 'title' | 'date' | 'start_time' | 'end_time' | 'location' | 'notes'>;
 
+export const INSPIRATION_CATEGORIES = ['灵感', '工作', '生活', '心情'] as const;
+export type InspirationCategory = (typeof INSPIRATION_CATEGORIES)[number];
+
+export interface Inspiration {
+  id: number;
+  content: string;
+  category: InspirationCategory;
+  created_at: string;
+}
+
+export type InspirationInput = Pick<Inspiration, 'content' | 'category'>;
+
+/** 灵感类型徽章（中性专业风） */
+export const INSPIRATION_CATEGORY_META: Record<InspirationCategory, string> = {
+  灵感: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
+  工作: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300',
+  生活: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+  心情: 'bg-violet-500/10 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',
+};
+
 export interface StatsSummary {
   today: {
     total: number;

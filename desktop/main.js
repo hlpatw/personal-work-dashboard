@@ -240,6 +240,20 @@ async function selfCheck() {
   }
 }
 
+/** 悬停激活：默认点击穿透（不挡下层窗口的按钮），鼠标悬停到小狗上才激活可交互。
+ *  穿透模式下用 forward:true 让鼠标事件仍转发到本窗口，渲染进程靠它检测 mouseenter。
+ */
+let petActive = true; // 启动时先激活（等首次 mouseleave 再转穿透）
+ipcMain.on('pet-hover', (_e, hover) => {
+  if (!petWin || petWin.isDestroyed()) return;
+  petActive = !!hover;
+  if (petActive) {
+    petWin.setIgnoreMouseEvents(false);
+  } else {
+    petWin.setIgnoreMouseEvents(true, { forward: true });
+  }
+});
+
 /** 宠物拖动：渲染进程发指针增量（dx,dy），主进程按窗口初始位置移动（不依赖屏幕光标）。
  *  合帧节流：用 rAF 周期合并高频 IPC，避免每次 pointermove 都触发一次
  *  窗口移动+重绘（快速拖动时重绘跟不上会造成残影/拖尾）。
@@ -252,6 +266,9 @@ ipcMain.on('pet-drag-start', () => {
   const [x, y] = petWin.getPosition();
   dragBase = { win: { x, y } };
   pendingDelta = null;
+  // 拖动期间必须可交互
+  petActive = true;
+  petWin.setIgnoreMouseEvents(false);
 });
 ipcMain.on('pet-drag-move', (_e, dx, dy) => {
   if (!petWin || petWin.isDestroyed() || !dragBase) return;

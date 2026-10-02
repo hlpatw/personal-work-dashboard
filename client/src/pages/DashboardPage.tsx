@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
+import { useState, type KeyboardEvent } from 'react';
 import { fetchTasks, updateTaskStatus } from '../api/tasks';
 import { fetchTodaySchedules } from '../api/schedules';
 import { fetchSummary } from '../api/stats';
 import { fetchGoals } from '../api/goals';
-import { PRIORITY_DOT, type Task, type Goal } from '../api/types';
-import { formatCN, todayStr } from '../lib/date';
+import { fetchInspirations, createInspiration } from '../api/inspirations';
+import { PRIORITY_DOT, INSPIRATION_CATEGORY_META, type Task, type Goal } from '../api/types';
+import { formatCN, todayStr, relativeTime } from '../lib/date';
 import { useCountUp } from '../lib/useCountUp';
 import { useProfileStore } from '../stores/profile';
 import Card from '../components/Card';
@@ -139,6 +141,17 @@ export default function DashboardPage() {
           </div>
         </Card>
       )}
+
+      {/* 此刻灵感：快速记录 + 最近几条 */}
+      <Card className="p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold">此刻灵感</h2>
+          <Link to="/inspirations" className="text-xs text-rose-600 hover:underline dark:text-rose-400">
+            全部 →
+          </Link>
+        </div>
+        <InspirationQuick />
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* 今日 + 逾期任务 */}
@@ -294,6 +307,75 @@ function GoalMini({ goal }: { goal: Goal }) {
         </p>
       )}
     </Link>
+  );
+}
+
+/** 概览页的灵感快捷区：快速输入 + 最近 3 条 */
+function InspirationQuick() {
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState('');
+  const { data: list } = useQuery({
+    queryKey: ['inspirations', 'recent'],
+    queryFn: () => fetchInspirations(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createInspiration,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inspirations'] });
+      setDraft('');
+    },
+  });
+
+  const submit = () => {
+    const content = draft.trim();
+    if (!content) return;
+    createMutation.mutate({ content, category: '灵感' });
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit();
+  };
+
+  const recent = (list ?? []).slice(0, 3);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <input
+          className="flex-1 rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
+          placeholder="迸发了什么想法？随手记…"
+          value={draft}
+          maxLength={500}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={onKeyDown}
+        />
+        <button
+          onClick={submit}
+          disabled={!draft.trim() || createMutation.isPending}
+          className="shrink-0 rounded-lg bg-rose-500 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 disabled:opacity-50"
+        >
+          记下
+        </button>
+      </div>
+      {recent.length > 0 ? (
+        <ul className="space-y-2">
+          {recent.map((item) => (
+            <li key={item.id} className="flex items-baseline gap-2 text-sm">
+              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] ${INSPIRATION_CATEGORY_META[item.category]}`}>
+                {item.category}
+              </span>
+              <span className="min-w-0 flex-1 truncate">{item.content}</span>
+              <span className="shrink-0 text-xs text-zinc-400 dark:text-zinc-500">
+                {relativeTime(item.created_at)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">记下第一条迸发的想法吧</p>
+      )}
+    </div>
   );
 }
 

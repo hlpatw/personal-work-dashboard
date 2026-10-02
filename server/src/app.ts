@@ -8,6 +8,7 @@ import taskRoutes from './routes/tasks.js';
 import scheduleRoutes from './routes/schedules.js';
 import statsRoutes from './routes/stats.js';
 import goalRoutes from './routes/goals.js';
+import inspirationRoutes from './routes/inspirations.js';
 
 /** 构造 Express 应用；dbPath 传 ':memory:' 用于测试 */
 export function createApp(dbPath: string, opts?: { staticDir?: string }) {
@@ -33,6 +34,7 @@ export function createApp(dbPath: string, opts?: { staticDir?: string }) {
   app.use('/api/schedules', scheduleRoutes(db));
   app.use('/api/stats', statsRoutes(db));
   app.use('/api/goals', goalRoutes(db));
+  app.use('/api/inspirations', inspirationRoutes(db));
 
   // 桌面模式 / 生产模式：托管前端构建产物并做 SPA 回退
   // 默认开发仓库的 client/dist；打包模式由调用方传入 staticDir

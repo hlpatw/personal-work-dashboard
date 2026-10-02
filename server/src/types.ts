@@ -2,6 +2,8 @@ export const TASK_CATEGORIES = ['工作', '学习', '生活', '其他'] as const
 export const TASK_PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
 export const TASK_STATUSES = ['todo', 'in_progress', 'done'] as const;
 
+export const INSPIRATION_CATEGORIES = ['灵感', '工作', '生活', '心情'] as const;
+
 declare global {
   namespace Express {
     interface Request {
@@ -14,6 +16,14 @@ declare global {
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 export type TaskStatus = (typeof TASK_STATUSES)[number];
+export type InspirationCategory = (typeof INSPIRATION_CATEGORIES)[number];
+
+export interface Inspiration {
+  id: number;
+  content: string;
+  category: InspirationCategory;
+  created_at: string;
+}
 
 export interface Task {
   id: number;

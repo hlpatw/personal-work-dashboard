@@ -68,6 +68,17 @@ export function initDb(path: string): Db {
     CREATE INDEX IF NOT EXISTS idx_tasks_due      ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category);
 
+    -- 此刻灵感：灵感迸发的随手记录（时间流，不可编辑，记错就删）
+    CREATE TABLE IF NOT EXISTS inspirations (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      content    TEXT    NOT NULL CHECK(length(trim(content)) > 0),
+      category   TEXT    NOT NULL DEFAULT '灵感'
+                 CHECK(category IN ('灵感','工作','生活','心情')),
+      user_id    INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
+      created_at TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_inspirations_user ON inspirations(user_id);
+
     -- 子任务清单：挂在任务下的勾选项
     CREATE TABLE IF NOT EXISTS subtasks (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,

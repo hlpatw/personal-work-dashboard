@@ -19,9 +19,10 @@ function ts(offsetDays: number, hm = '10:00'): string {
   return `${dateStr(offsetDays)} ${hm}:00`;
 }
 
-// 清空旧数据
+// 清空旧数据（顺序：先子表后主表，满足外键约束）
+run(db, 'DELETE FROM subtasks');
 run(db, 'DELETE FROM tasks');
-run(db, "DELETE FROM sqlite_sequence WHERE name IN ('tasks','schedules')");
+run(db, "DELETE FROM sqlite_sequence WHERE name IN ('tasks','schedules','subtasks')");
 
 // ---- 任务：过去两周（部分已完成，completed_at 分散供图表使用）----
 const past: Array<[string, string, string, number, number | null]> = [
@@ -120,7 +121,11 @@ for (const [title, day, start, end, location] of schedules) {
 }
 
 // ---- 长期目标 ----
+// 注意：先解除任务的旧关联再删目标，否则外键约束报错；同时重置序列，
+// 否则新目标 id 不从 1 开始，下面 UPDATE tasks SET goal_id = 1 会因无 id=1 而外键失败
+run(db, 'UPDATE tasks SET goal_id = NULL');
 run(db, 'DELETE FROM goals');
+run(db, "DELETE FROM sqlite_sequence WHERE name = 'goals'");
 const goalDefs: Array<[string, string, number, string]> = [
   ['Q4 学完 React 基础', '完成线上课程并做三个练习项目', 60, 'active'],
   ['年内读完 12 本书', '每月一本，笔记归档', 90, 'active'],
@@ -152,7 +157,33 @@ for (const t of plan) {
   });
 }
 
+// ---- 此刻灵感 ----
+run(db, 'DELETE FROM inspirations');
+const inspirations: Array<[string, string, number, string]> = [
+  // [内容, 类型, 天偏移, 时刻]
+  ['楼下樱花开了，绕远路回家也值得', '生活', 0, '08:42'],
+  ['周报模板可以做成自动汇总本周完成任务', '工作', 0, '10:15'],
+  ['想给统计页加个月度回顾的视图', '灵感', -1, '21:30'],
+  ['晚上十点后的效率意外地高，考虑调整作息', '心情', -1, '22:48'],
+  ['地铁上听到的播客推荐：《数字极简》', '灵感', -2, '09:05'],
+  ['给爸妈订体检套餐', '生活', -3, '14:20'],
+  ['深色模式下的玫瑰粉对比度还可以再调', '工作', -4, '16:33'],
+  ['连续三天晨跑了，膝盖无不适', '心情', -5, '07:50'],
+];
+for (const [content, category, offset, hm] of inspirations) {
+  run(
+    db,
+    'INSERT INTO inspirations (content, category, created_at) VALUES (?, ?, ?)',
+    content,
+    category,
+    `${dateStr(offset)} ${hm}:00`
+  );
+}
+
 const total = (db.prepare('SELECT COUNT(*) AS c FROM tasks').get() as { c: number }).c;
 const totalSchedules = (db.prepare('SELECT COUNT(*) AS c FROM schedules').get() as { c: number }).c;
 const totalGoals = (db.prepare('SELECT COUNT(*) AS c FROM goals').get() as { c: number }).c;
-console.log(`[seed] 已写入 ${total} 条任务、${totalSchedules} 条日程、${totalGoals} 个目标`);
+const totalInspirations = (db.prepare('SELECT COUNT(*) AS c FROM inspirations').get() as { c: number }).c;
+console.log(
+  `[seed] 已写入 ${total} 条任务、${totalSchedules} 条日程、${totalGoals} 个目标、${totalInspirations} 条灵感`
+);

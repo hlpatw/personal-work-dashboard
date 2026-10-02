@@ -80,6 +80,16 @@ export function IconTarget({ className = 'h-[18px] w-[18px]' }: IconProps) {
   );
 }
 
+/** 此刻灵感：闪电火花 */
+export function IconSpark({ className = 'h-[18px] w-[18px]' }: IconProps) {
+  return base(
+    className,
+    <>
+      <path d="M13 2.5L5 13.5h5.5L10 21.5l8-11h-5.5L13 2.5z" />
+    </>
+  );
+}
+
 /** 编辑：铅笔 */
 export function IconPencil({ className = 'h-4 w-4' }: IconProps) {
   return base(

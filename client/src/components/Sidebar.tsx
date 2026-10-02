@@ -7,6 +7,7 @@ import Modal from './Modal';
 import {
   IconCalendar,
   IconDashboard,
+  IconSpark,
   IconStats,
   IconTarget,
   IconTasks,
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/', label: '概览', icon: IconDashboard, end: true },
   { to: '/tasks', label: '任务', icon: IconTasks, end: false },
   { to: '/calendar', label: '日历', icon: IconCalendar, end: false },
+  { to: '/inspirations', label: '此刻灵感', icon: IconSpark, end: false },
   { to: '/goals', label: '目标', icon: IconTarget, end: false },
   { to: '/stats', label: '统计', icon: IconStats, end: false },
 ];

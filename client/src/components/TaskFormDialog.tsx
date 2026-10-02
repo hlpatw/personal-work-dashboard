@@ -20,14 +20,16 @@ const inputCls =
 interface Props {
   task: Task | null; // null = 新建
   onClose: () => void;
+  /** 新建时预填标题（如"灵感转任务"场景） */
+  initialTitle?: string;
 }
 
-export default function TaskFormDialog({ task, onClose }: Props) {
+export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
   const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [tagDraft, setTagDraft] = useState((task?.tags ?? []).join('，'));
   const [form, setForm] = useState<Omit<TaskInput, 'tags' | 'subtasks'>>({
-    title: task?.title ?? '',
+    title: task?.title ?? initialTitle ?? '',
     description: task?.description ?? '',
     category: task?.category ?? '工作',
     priority: task?.priority ?? 'medium',

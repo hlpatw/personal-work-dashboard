@@ -10,4 +10,6 @@ contextBridge.exposeInMainWorld('desktop', {
   dragStart: () => ipcRenderer.send('pet-drag-start'),
   /** 拖动中：按指针位移增量（dx,dy）移动窗口 */
   dragMove: (dx, dy) => ipcRenderer.send('pet-drag-move', Math.round(dx), Math.round(dy)),
+  /** 悬停激活/穿透切换：hover=true 激活可交互；false 点击穿透到下层窗口 */
+  setHover: (hover) => ipcRenderer.send('pet-hover', hover),
 });

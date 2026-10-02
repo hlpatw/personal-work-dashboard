@@ -20,17 +20,23 @@
       align-items: center;
       justify-content: center;
     }
-    /* 像素小狗：两帧动画（耳朵+舌头） */
+    /* 像素小狗：两帧动画（耳朵+舌头）；hover 为悬停激活态（发亮提示可交互） */
     .dog {
       width: 46px;
       height: 42px;
-      cursor: grab;
+      cursor: default;
       border: none;
       background: transparent;
       padding: 0;
       outline: none;
       display: block;
       position: relative;
+      transition: filter 0.18s ease, transform 0.18s ease;
+    }
+    .dog:hover {
+      cursor: grab;
+      filter: brightness(1.12) drop-shadow(0 0 6px rgba(244, 114, 182, 0.5));
+      transform: scale(1.06);
     }
     .dog:active { cursor: grabbing; }
     /* 两帧同位叠放，靠可见性切换，避免布局抖动 */
@@ -158,6 +164,13 @@
       }, 8000 + Math.random() * 6000);
     };
     scheduleIdle();
+
+    // 悬停激活：进入小狗范围 → 激活可交互；离开 → 点击穿透到下层窗口
+    // （解决置顶小狗挡住其他应用关闭/最小化按钮的问题）
+    dog.addEventListener('mouseenter', () => bridge?.setHover(true));
+    dog.addEventListener('mouseleave', () => {
+      if (!dragging) bridge?.setHover(false);
+    });
 
     // 拖动：按下位移>3px 即进入拖动态；原地点击 = 开关面板。
     // 关键设计：

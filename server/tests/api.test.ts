@@ -206,6 +206,52 @@ describe('长期目标', () => {
   });
 });
 
+describe('此刻灵感', () => {
+  it('创建返回 201 且默认类型为灵感', async () => {
+    const res = await request(app).post('/api/inspirations').send({ content: '楼下樱花开了' });
+    expect(res.status).toBe(201);
+    expect(res.body.content).toBe('楼下樱花开了');
+    expect(res.body.category).toBe('灵感');
+    expect(res.body.created_at).toBeTruthy();
+  });
+
+  it('空内容与超长内容返回 400', async () => {
+    expect((await request(app).post('/api/inspirations').send({ content: '   ' })).status).toBe(400);
+    expect((await request(app).post('/api/inspirations').send({ content: 'a'.repeat(501) })).status).toBe(400);
+  });
+
+  it('非法类型返回 400', async () => {
+    const res = await request(app).post('/api/inspirations').send({ content: 'x', category: '杂念' });
+    expect(res.status).toBe(400);
+  });
+
+  it('搜索与类型筛选', async () => {
+    await request(app).post('/api/inspirations').send({ content: '周报可以这样写', category: '工作' });
+    await request(app).post('/api/inspirations').send({ content: '楼下樱花开了', category: '生活' });
+    const byQ = await request(app).get('/api/inspirations?q=樱花');
+    expect(byQ.body).toHaveLength(1);
+    expect(byQ.body[0].content).toContain('樱花');
+    const byCat = await request(app).get('/api/inspirations?category=工作');
+    expect(byCat.body).toHaveLength(1);
+    expect(byCat.body[0].content).toContain('周报');
+  });
+
+  it('列表按时间倒序（新的在前）', async () => {
+    await request(app).post('/api/inspirations').send({ content: '第一条' });
+    await new Promise((r) => setTimeout(r, 1100)); // 确保 created_at 秒级不同
+    await request(app).post('/api/inspirations').send({ content: '第二条' });
+    const list = await request(app).get('/api/inspirations');
+    expect(list.body[0].content).toBe('第二条');
+    expect(list.body[1].content).toBe('第一条');
+  });
+
+  it('删除 204 与不存在 404', async () => {
+    const created = await request(app).post('/api/inspirations').send({ content: '待删' });
+    expect((await request(app).delete(`/api/inspirations/${created.body.id}`)).status).toBe(204);
+    expect((await request(app).delete(`/api/inspirations/${created.body.id}`)).status).toBe(404);
+  });
+});
+
 describe('schedules', () => {
   it('创建日程 201', async () => {
     const res = await request(app)
