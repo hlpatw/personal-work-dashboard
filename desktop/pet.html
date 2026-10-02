@@ -154,9 +154,10 @@
     scheduleIdle();
 
     // 拖动：按下位移>3px 即进入拖动态；原地点击 = 开关面板。
-    // 关键：用 Pointer Events + setPointerCapture——指针移出小窗口后事件仍持续送达，
-    // 拖动不会在小窗口边缘断线。位移用 clientX/Y 判定（不依赖 screen 坐标，
-    // 对合成输入与真人操作都可靠）。
+    // 关键设计：
+    // 1. Pointer Capture——指针移出小窗口后事件仍持续送达
+    // 2. 位移判定用 screenX/Y（窗口移动不影响 screen 坐标系；
+    //    clientX/Y 以窗口为原点，窗口一动坐标就漂，不能用于累计位移）
     let pressed = false;
     let dragging = false;
     let startX = 0;
@@ -166,15 +167,15 @@
       if (e.button !== 0) return;
       pressed = true;
       dragging = false;
-      startX = e.clientX;
-      startY = e.clientY;
+      startX = e.screenX;
+      startY = e.screenY;
       try { dog.setPointerCapture(e.pointerId); } catch (_) { /* 合成事件无捕获 */ }
     });
 
     dog.addEventListener('pointermove', (e) => {
       if (!pressed) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
+      const dx = e.screenX - startX;
+      const dy = e.screenY - startY;
       if (!dragging && Math.hypot(dx, dy) > 3) {
         dragging = true;
         setExcited(true);

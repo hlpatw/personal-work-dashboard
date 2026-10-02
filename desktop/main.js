@@ -132,12 +132,19 @@ function createPetWindow() {
     skipTaskbar: true,
     alwaysOnTop: true,
     hasShadow: false,
+    // 拖动残影抑制：禁用透明窗口的合成器节流，移动时强制即时重绘
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      backgroundThrottling: false,
     },
   });
+  // Windows 下透明窗口快速 setPosition 会出现残影/拖尾，
+  // 让窗口在 DWM 层直通合成可显著缓解
+  if (process.platform === 'win32') {
+    petWin.setOpacity(0.99999);
+  }
   petWin.setAlwaysOnTop(true, 'screen-saver');
   // 诊断：窗口意外关闭/加载失败时给出原因
   petWin.webContents.on('did-fail-load', (_e, code, desc) =>
@@ -231,16 +238,31 @@ async function selfCheck() {
   }
 }
 
-/** 宠物拖动：渲染进程发指针增量（dx,dy），主进程按窗口初始位置移动（不依赖屏幕光标） */
+/** 宠物拖动：渲染进程发指针增量（dx,dy），主进程按窗口初始位置移动（不依赖屏幕光标）。
+ *  合帧节流：用 rAF 周期合并高频 IPC，避免每次 pointermove 都触发一次
+ *  窗口移动+重绘（快速拖动时重绘跟不上会造成残影/拖尾）。
+ */
 let dragBase = null; // { win: {x,y} }
+let pendingDelta = null; // 待应用的最新增量
+let moveScheduled = false;
 ipcMain.on('pet-drag-start', () => {
   if (!petWin || petWin.isDestroyed()) return;
   const [x, y] = petWin.getPosition();
   dragBase = { win: { x, y } };
+  pendingDelta = null;
 });
 ipcMain.on('pet-drag-move', (_e, dx, dy) => {
   if (!petWin || petWin.isDestroyed() || !dragBase) return;
-  petWin.setPosition(dragBase.win.x + dx, dragBase.win.y + dy);
+  pendingDelta = { dx, dy };
+  if (moveScheduled) return;
+  moveScheduled = true;
+  setImmediate(() => {
+    moveScheduled = false;
+    if (!pendingDelta || !petWin || petWin.isDestroyed() || !dragBase) return;
+    const { dx: fdx, dy: fdy } = pendingDelta;
+    pendingDelta = null;
+    petWin.setPosition(dragBase.win.x + fdx, dragBase.win.y + fdy);
+  });
 });
 
 app.whenReady().then(async () => {
