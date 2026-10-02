@@ -82,6 +82,10 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 ├── server/               # 后端（Express + node:sqlite）
 │   ├── src/{routes,db.ts,app.ts,index.ts,seed.ts}
 │   └── tests/api.test.ts
+├── desktop/              # Electron 桌面宠物与打包配置
+├── docs/
+│   ├── 思维导图.md        # 项目全景
+│   └── 项目进展.md        # 交接文档（给下次迭代的 AI 助手）
 └── scripts/verify-ui.mjs # 浏览器端验收脚本
 ```
 
