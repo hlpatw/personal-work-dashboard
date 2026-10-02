@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 import Sidebar from './Sidebar';
 
 /** 自然光风格的柔和渐变背景（aurora），玻璃卡片的底色来源 */
@@ -13,13 +13,16 @@ function AuroraBackground() {
 }
 
 export default function AppLayout() {
+  const location = useLocation();
   return (
     <div className="flex h-screen overflow-hidden">
       <AuroraBackground />
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-4 py-6 md:px-8">
-          <Outlet />
+          <div key={location.pathname} className="page-fade">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

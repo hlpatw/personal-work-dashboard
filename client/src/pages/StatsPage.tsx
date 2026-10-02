@@ -20,6 +20,7 @@ import { useThemeStore } from '../stores/theme';
 import { formatCN } from '../lib/date';
 import { useCountUp } from '../lib/useCountUp';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 
 // 图表颜色：已通过色盲安全与对比度验证
 // （浅色基于 #ffffff 表面、深色基于 #1c1917 表面；分类槽位固定，色彩跟随实体）
@@ -94,7 +95,7 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold tracking-tight">统计</h1>
+      <PageHeader title="统计" subtitle={`近 ${WEEKS} 周完成趋势与分类总览`} />
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

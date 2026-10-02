@@ -6,9 +6,11 @@ import { fetchSummary } from '../api/stats';
 import { PRIORITY_DOT, type Task } from '../api/types';
 import { formatCN, todayStr } from '../lib/date';
 import { useCountUp } from '../lib/useCountUp';
+import { useProfileStore } from '../stores/profile';
 import Card from '../components/Card';
 import EmptyState from '../components/EmptyState';
 import ProgressRing from '../components/ProgressRing';
+import PageHeader from '../components/PageHeader';
 
 export default function DashboardPage() {
   const queryClient = useQueryClient();
@@ -71,19 +73,27 @@ export default function DashboardPage() {
     },
   ];
 
+  const nickname = useProfileStore((s) => s.nickname);
+  const motto = useProfileStore((s) => s.motto);
+  const hour = new Date().getHours();
+  const greeting = hour < 11 ? '早上好' : hour < 13 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
+
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">概览</h1>
-        <p className="mt-0.5 text-sm text-stone-600 dark:text-stone-300">
-          {formatCN(new Date(), 'yyyy年M月d日 EEEE')}
-          {(summary?.overdue_count ?? 0) > 0 && (
-            <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600 dark:bg-red-500/20 dark:text-red-400">
-              {summary?.overdue_count} 项逾期
-            </span>
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title={`${greeting}，${nickname}`}
+        subtitle={
+          <>
+            <span>{formatCN(new Date(), 'yyyy年M月d日 EEEE')}</span>
+            <span className="text-stone-400 dark:text-stone-500">「{motto}」</span>
+            {(summary?.overdue_count ?? 0) > 0 && (
+              <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600 dark:bg-red-500/20 dark:text-red-400">
+                {summary?.overdue_count} 项逾期
+              </span>
+            )}
+          </>
+        }
+      />
 
       {/* Bento 统计卡片（今日完成为主卡，占两列带进度环） */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">

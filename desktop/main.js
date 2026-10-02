@@ -11,8 +11,7 @@ const { existsSync } = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 
-// 小组件类应用不需要 GPU 合成；禁用可避免部分驱动下透明窗口崩溃
-app.disableHardwareAcceleration();
+// 透明悬浮球需要 GPU 合成，保持硬件加速开启（若个别驱动崩溃可改回 disableHardwareAcceleration）
 
 const PORT = Number(process.env.PORT || 3001);
 const BASE_URL = `http://localhost:${PORT}`;
@@ -89,15 +88,16 @@ async function ensureServer() {
 function createPetWindow() {
   const { workArea } = require('electron').screen.getPrimaryDisplay();
   petWin = new BrowserWindow({
-    width: 148,
-    height: 168,
-    x: workArea.x + workArea.width - 168,
-    y: workArea.y + workArea.height - 188,
+    width: 66,
+    height: 66,
+    x: workArea.x + workArea.width - 82,
+    y: workArea.y + workArea.height - 82,
     frame: false,
+    transparent: true,
     resizable: false,
     skipTaskbar: true,
     alwaysOnTop: true,
-    backgroundColor: '#f4719f',
+    hasShadow: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

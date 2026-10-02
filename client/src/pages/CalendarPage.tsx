@@ -8,6 +8,7 @@ import { monthGridDays, toDateStr, todayStr, formatCN } from '../lib/date';
 import ScheduleFormDialog from '../components/ScheduleFormDialog';
 import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 import { IconMapPin, IconPencil, IconTrash } from '../components/icons';
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
@@ -53,32 +54,35 @@ export default function CalendarPage() {
   return (
     <div className="space-y-4">
       {/* 月份切换 */}
-      <div className="flex items-center gap-2">
-        <h1 className="mr-auto text-xl font-semibold tracking-tight">
-          {format(cursor, 'yyyy年M月', { locale: zhCN })}
-        </h1>
-        <button
-          onClick={() => setCursor(addMonths(cursor, -1))}
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
-        >
-          ←
-        </button>
-        <button
-          onClick={() => {
-            setCursor(new Date());
-            setSelected(today);
-          }}
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
-        >
-          今天
-        </button>
-        <button
-          onClick={() => setCursor(addMonths(cursor, 1))}
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
-        >
-          →
-        </button>
-      </div>
+      <PageHeader
+        title={format(cursor, 'yyyy年M月', { locale: zhCN })}
+        subtitle={schedules ? `${schedules.length} 项日程` : '…'}
+        actions={
+          <>
+            <button
+              onClick={() => setCursor(addMonths(cursor, -1))}
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
+            >
+              ←
+            </button>
+            <button
+              onClick={() => {
+                setCursor(new Date());
+                setSelected(today);
+              }}
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
+            >
+              今天
+            </button>
+            <button
+              onClick={() => setCursor(addMonths(cursor, 1))}
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
+            >
+              →
+            </button>
+          </>
+        }
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         {/* 月历 */}

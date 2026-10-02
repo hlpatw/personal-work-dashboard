@@ -11,134 +11,123 @@
       overflow: hidden;
       font-family: system-ui, 'Segoe UI', 'Microsoft YaHei', sans-serif;
       user-select: none;
-      /* 整卡可拖动；脸是 no-drag 可点击 */
-      -webkit-app-region: drag;
-      background: linear-gradient(160deg, #fb8bb0 0%, #f2608f 55%, #e84a7f 100%);
-      border-radius: 24px;
+      -webkit-app-region: drag;          /* 整卡拖动，脸可点击 */
+      background: transparent;
     }
     .stage {
       width: 100%;
       height: 100%;
-      position: relative;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
-      padding-bottom: 18px;
     }
-    /* 顶部柔光，让卡片有果冻质感 */
-    .stage::before {
+    /* 高级感：一颗细腻的渐变光球，微表情，克制留白 */
+    .orb {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background:
+        radial-gradient(34% 26% at 33% 25%, rgba(255, 255, 255, 0.65), transparent 72%),
+        linear-gradient(150deg, #ff9cbf 0%, #f2689c 52%, #d94a80 100%);
+      box-shadow:
+        0 4px 14px rgba(217, 74, 128, 0.45),
+        inset -2px -4px 8px rgba(140, 20, 60, 0.35),
+        inset 2px 3px 6px rgba(255, 255, 255, 0.5),
+        inset 0 0 1.5px rgba(255, 255, 255, 0.6);
+      animation: breathe 3.6s ease-in-out infinite;
+      transition: filter 0.2s ease;
+      -webkit-app-region: no-drag;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* 小而亮的镜面高光点，赋予果冻感 */
+    .orb::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: radial-gradient(120% 70% at 50% -10%, rgba(255, 255, 255, 0.5), transparent 60%);
+      top: 20%;
+      left: 28%;
+      width: 6px;
+      height: 4px;
+      background: #fff;
+      border-radius: 50%;
+      filter: blur(0.2px);
+      transform: rotate(-22deg);
+      box-shadow: 0 0 3px rgba(255, 255, 255, 0.9);
       pointer-events: none;
     }
-    .pet {
-      position: relative;
-      width: 96px;
-      height: 88px;
-      animation: bob 3.2s ease-in-out infinite;
-    }
-    .ear {
-      position: absolute;
-      width: 24px;
-      height: 32px;
-      background: linear-gradient(160deg, #ffd3e2, #ffb6cd);
-      border-radius: 50% 50% 46% 46%;
-      top: -14px;
-      box-shadow: 0 2px 6px rgba(160, 20, 70, 0.25);
-    }
-    .ear.left { left: 14px; transform: rotate(-16deg); }
-    .ear.right { right: 14px; transform: rotate(16deg); }
-    .ear::after {
-      content: '';
-      position: absolute;
-      inset: 6px 6px 3px 6px;
-      background: #ff9dbf;
-      border-radius: 50% 50% 42% 42%;
-    }
+    .orb:hover { filter: brightness(1.08) saturate(1.05); }
+    .orb:active { transform: scale(0.93); }
     .face {
-      position: absolute;
-      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
-      -webkit-app-region: no-drag;
-      cursor: pointer;
-      background: linear-gradient(165deg, #ff9fc2 0%, #f76ba0 100%);
-      border-radius: 48% 46% 46% 48% / 56% 56% 44% 44%;
-      box-shadow:
-        inset -5px -8px 14px rgba(160, 20, 70, 0.28),
-        inset 3px 5px 10px rgba(255, 255, 255, 0.45);
-      transition: transform 0.15s ease;
+      gap: 4px;
+      margin-top: 3px;
     }
-    .face:active { transform: scale(0.94); }
-    .eyes { display: flex; gap: 18px; }
+    .eyes { display: flex; gap: 9px; }
     .eye {
-      width: 11px;
-      height: 14px;
-      background: #4a333d;
+      position: relative;
+      width: 4.5px;
+      height: 6px;
+      background: #52333d;
       border-radius: 50%;
-      animation: blink 4.6s infinite;
+      animation: blink 5.2s infinite;
     }
-    .mouth {
-      width: 15px;
-      height: 7px;
-      border: 2.5px solid #4a333d;
+    .eye::after {
+      content: '';
+      position: absolute;
+      top: 0.6px;
+      right: 0.6px;
+      width: 1.6px;
+      height: 1.6px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    .smile {
+      width: 7.5px;
+      height: 4px;
+      border: 1.8px solid #52333d;
       border-top: none;
-      border-radius: 0 0 14px 14px;
+      border-radius: 0 0 8px 8px;
     }
-    .blush {
+    .ring {
       position: absolute;
-      width: 17px;
-      height: 9px;
-      background: rgba(255, 205, 222, 0.9);
+      inset: -5px;
       border-radius: 50%;
-      top: 52px;
-      filter: blur(0.6px);
+      border: 1px solid rgba(255, 156, 191, 0.35);
+      animation: pulse 3.6s ease-in-out infinite;
+      pointer-events: none;
     }
-    .blush.left { left: 4px; }
-    .blush.right { right: 4px; }
-    .hint {
-      position: absolute;
-      top: 7px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.85);
-      white-space: nowrap;
-      letter-spacing: 1px;
-      text-shadow: 0 1px 2px rgba(160, 20, 70, 0.3);
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.045); }
     }
-    @keyframes bob {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.55; }
+      50% { transform: scale(1.1); opacity: 0.15; }
     }
     @keyframes blink {
-      0%, 92%, 100% { transform: scaleY(1); }
-      95% { transform: scaleY(0.1); }
+      0%, 93%, 100% { transform: scaleY(1); }
+      96% { transform: scaleY(0.08); }
     }
   </style>
 </head>
 <body>
   <div class="stage">
-    <span class="hint">拖动移动 · 点脸开面板</span>
-    <div class="pet">
-      <div class="ear left"></div>
-      <div class="ear right"></div>
-      <button class="face" title="点我打开面板" aria-label="打开面板">
+    <button class="orb" title="点我打开面板 · 拖动移动 · 右键菜单" aria-label="打开面板">
+      <span class="ring"></span>
+      <span class="face">
         <span class="eyes"><span class="eye"></span><span class="eye"></span></span>
-        <span class="mouth"></span>
-        <span class="blush left"></span>
-        <span class="blush right"></span>
-      </button>
-    </div>
+        <span class="smile"></span>
+      </span>
+    </button>
   </div>
   <script>
-    const face = document.querySelector('.face');
-    face.addEventListener('click', () => window.desktop?.toggleDashboard());
+    document.querySelector('.orb').addEventListener('click', () => window.desktop?.toggleDashboard());
     window.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       window.desktop?.openMenu();

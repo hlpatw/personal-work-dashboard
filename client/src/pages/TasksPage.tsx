@@ -17,6 +17,7 @@ import { formatDuration } from '../lib/format';
 import TaskFormDialog from '../components/TaskFormDialog';
 import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 import { IconClock, IconPencil, IconTrash } from '../components/icons';
 
 const selectCls =
@@ -61,45 +62,50 @@ export default function TasksPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-auto text-xl font-semibold tracking-tight">任务</h1>
-        <input
-          className={`${selectCls} w-40`}
-          placeholder="搜索标题/描述…"
-          value={filters.q ?? ''}
-          onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-        />
-        <select
-          className={selectCls}
-          value={filters.status ?? ''}
-          onChange={(e) => setFilters({ ...filters, status: (e.target.value || '') as TaskStatus | '' })}
-        >
-          <option value="">全部状态</option>
-          {TASK_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
-        <select
-          className={selectCls}
-          value={filters.category ?? ''}
-          onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-        >
-          <option value="">全部分类</option>
-          {TASK_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={() => setCreating(true)}
-          className="rounded-lg bg-rose-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm shadow-rose-600/20 transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/40"
-        >
-          ＋ 新建任务
-        </button>
-      </div>
+      <PageHeader
+        title="任务"
+        subtitle={tasks ? `共 ${tasks.length} 项` : '…'}
+        actions={
+          <>
+            <input
+              className={`${selectCls} w-40`}
+              placeholder="搜索标题/描述…"
+              value={filters.q ?? ''}
+              onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+            />
+            <select
+              className={selectCls}
+              value={filters.status ?? ''}
+              onChange={(e) => setFilters({ ...filters, status: (e.target.value || '') as TaskStatus | '' })}
+            >
+              <option value="">全部状态</option>
+              {TASK_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_LABELS[s]}
+                </option>
+              ))}
+            </select>
+            <select
+              className={selectCls}
+              value={filters.category ?? ''}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+            >
+              <option value="">全部分类</option>
+              {TASK_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => setCreating(true)}
+              className="rounded-lg bg-rose-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm shadow-rose-600/20 transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/40"
+            >
+              ＋ 新建任务
+            </button>
+          </>
+        }
+      />
 
       <Card>
         {isLoading ? (
