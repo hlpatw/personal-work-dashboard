@@ -20,127 +20,132 @@
       align-items: center;
       justify-content: center;
     }
-    /* 像素小猫：两帧呼吸（尾巴摆动） */
-    .cat {
-      width: 44px;
-      height: 40px;
+    /* 像素小狗：两帧动画（耳朵+舌头） */
+    .dog {
+      width: 46px;
+      height: 42px;
       cursor: grab;
       border: none;
       background: transparent;
       padding: 0;
     }
-    .cat:active { cursor: grabbing; }
-    .cat svg { display: block; image-rendering: pixelated; }
+    .dog:active { cursor: grabbing; }
+    .dog svg { display: block; image-rendering: pixelated; }
     .frame-b { display: none; }
-    .breathing .frame-a { display: none; }
-    .breathing .frame-b { display: block; }
-    @keyframes breatheFrames {
-      0%, 46% { /* 帧 A */ }
-      50%, 96% { /* 帧 B */ }
-    }
-    /* JS 驱动帧切换更可靠：这里只做柔和的整体微缩 */
-    .cat { transition: transform 0.15s ease; }
+    .excited .frame-a { display: none; }
+    .excited .frame-b { display: block; }
   </style>
 </head>
 <body>
   <div class="stage">
-    <button class="cat" id="cat" title="点亮开面板 · 按住拖动" aria-label="打开面板">
-      <!-- 帧 A：常态（尾巴向右下） -->
-      <svg class="frame-a" width="44" height="40" viewBox="0 0 22 20" shape-rendering="crispEdges" aria-hidden="true">
+    <button class="dog" id="dog" title="点亮开面板 · 按住拖动" aria-label="打开面板">
+      <!-- 帧 A：常态（垂耳，吐舌） -->
+      <svg class="frame-a" width="46" height="42" viewBox="0 0 23 21" shape-rendering="crispEdges" aria-hidden="true">
         <g>
-          <!-- 耳朵 -->
-          <rect x="3" y="1" width="2" height="2" fill="#f6c39a"/>
-          <rect x="5" y="2" width="1" height="1" fill="#f6c39a"/>
-          <rect x="16" y="1" width="2" height="2" fill="#f6c39a"/>
-          <rect x="16" y="2" width="1" height="1" fill="#f6c39a"/>
-          <rect x="4" y="2" width="1" height="1" fill="#f2a9c2"/>
-          <rect x="16" y="2" width="1" height="1" fill="#f2a9c2"/>
-          <!-- 头 -->
-          <rect x="3" y="3" width="14" height="8" fill="#f6c39a"/>
-          <rect x="2" y="4" width="1" height="6" fill="#f6c39a"/>
-          <rect x="17" y="4" width="1" height="6" fill="#f6c39a"/>
-          <!-- 条纹 -->
-          <rect x="7" y="3" width="1" height="1" fill="#e8a678"/>
-          <rect x="10" y="3" width="2" height="1" fill="#e8a678"/>
-          <rect x="14" y="3" width="1" height="1" fill="#e8a678"/>
-          <!-- 眼睛（闭合弧线的像素表现：两粒黑豆 + 高光） -->
-          <rect x="6" y="6" width="2" height="2" fill="#3d2f28"/>
-          <rect x="13" y="6" width="2" height="2" fill="#3d2f28"/>
-          <rect x="6" y="6" width="1" height="1" fill="#fff"/>
-          <rect x="13" y="6" width="1" height="1" fill="#fff"/>
-          <!-- 鼻子与嘴 -->
-          <rect x="10" y="8" width="1" height="1" fill="#e88aa5"/>
-          <rect x="9" y="9" width="1" height="1" fill="#3d2f28"/>
-          <rect x="11" y="9" width="1" height="1" fill="#3d2f28"/>
+          <!-- 左耳（垂耳，深棕） -->
+          <rect x="2" y="2" width="2" height="5" fill="#b57a45"/>
+          <rect x="1" y="3" width="1" height="4" fill="#a86a38"/>
+          <!-- 右耳 -->
+          <rect x="18" y="2" width="2" height="5" fill="#b57a45"/>
+          <rect x="20" y="3" width="1" height="4" fill="#a86a38"/>
+          <!-- 头（奶油） -->
+          <rect x="4" y="1" width="13" height="2" fill="#f0c987"/>
+          <rect x="3" y="3" width="15" height="8" fill="#f0c987"/>
+          <!-- 眉点 -->
+          <rect x="6" y="4" width="1" height="1" fill="#c99a55"/>
+          <rect x="14" y="4" width="1" height="1" fill="#c99a55"/>
+          <!-- 眼睛 -->
+          <rect x="6" y="5" width="2" height="2" fill="#3a2c22"/>
+          <rect x="13" y="5" width="2" height="2" fill="#3a2c22"/>
+          <rect x="6" y="5" width="1" height="1" fill="#fff"/>
+          <rect x="13" y="5" width="1" height="1" fill="#fff"/>
+          <!-- 口鼻（浅色） -->
+          <rect x="8" y="8" width="5" height="3" fill="#fbe9c4"/>
+          <rect x="10" y="8" width="1" height="1" fill="#3a2c22"/>
+          <!-- 嘴 + 舌头 -->
+          <rect x="9" y="10" width="1" height="1" fill="#3a2c22"/>
+          <rect x="12" y="10" width="1" height="1" fill="#3a2c22"/>
+          <rect x="10" y="10" width="2" height="1" fill="#ef9aa5"/>
           <!-- 腮红 -->
-          <rect x="4" y="8" width="1" height="1" fill="#f2a9c2"/>
-          <rect x="16" y="8" width="1" height="1" fill="#f2a9c2"/>
+          <rect x="4" y="7" width="1" height="1" fill="#f2b8a0"/>
+          <rect x="16" y="7" width="1" height="1" fill="#f2b8a0"/>
           <!-- 身体 -->
-          <rect x="4" y="11" width="12" height="6" fill="#f6c39a"/>
-          <rect x="5" y="17" width="2" height="1" fill="#e8a678"/>
-          <rect x="9" y="17" width="2" height="1" fill="#e8a678"/>
-          <rect x="13" y="17" width="2" height="1" fill="#e8a678"/>
+          <rect x="5" y="11" width="11" height="6" fill="#f0c987"/>
+          <rect x="6" y="17" width="9" height="1" fill="#e8bd72"/>
+          <!-- 胸前浅毛 -->
+          <rect x="9" y="12" width="3" height="4" fill="#fbe9c4"/>
           <!-- 前爪 -->
-          <rect x="6" y="16" width="2" height="1" fill="#fbd9b8"/>
-          <rect x="12" y="16" width="2" height="1" fill="#fbd9b8"/>
-          <!-- 尾巴 A：向右上翘 -->
-          <rect x="16" y="13" width="1" height="2" fill="#f6c39a"/>
-          <rect x="17" y="12" width="2" height="1" fill="#f6c39a"/>
+          <rect x="6" y="16" width="2" height="1" fill="#fbe9c4"/>
+          <rect x="13" y="16" width="2" height="1" fill="#fbe9c4"/>
+          <!-- 尾巴 A（上翘） -->
+          <rect x="16" y="12" width="1" height="2" fill="#f0c987"/>
+          <rect x="17" y="11" width="1" height="1" fill="#c99a55"/>
+          <rect x="17" y="10" width="1" height="1" fill="#f0c987"/>
         </g>
       </svg>
-      <!-- 帧 B：眨眼（尾巴放平） -->
-      <svg class="frame-b" width="44" height="40" viewBox="0 0 22 20" shape-rendering="crispEdges" aria-hidden="true">
+      <!-- 帧 B：兴奋（竖耳，吐舌更长，尾巴摆） -->
+      <svg class="frame-b" width="46" height="42" viewBox="0 0 23 21" shape-rendering="crispEdges" aria-hidden="true">
         <g>
-          <rect x="3" y="1" width="2" height="2" fill="#f6c39a"/>
-          <rect x="5" y="2" width="1" height="1" fill="#f6c39a"/>
-          <rect x="16" y="1" width="2" height="2" fill="#f6c39a"/>
-          <rect x="16" y="2" width="1" height="1" fill="#f6c39a"/>
-          <rect x="4" y="2" width="1" height="1" fill="#f2a9c2"/>
-          <rect x="16" y="2" width="1" height="1" fill="#f2a9c2"/>
-          <rect x="3" y="3" width="14" height="8" fill="#f6c39a"/>
-          <rect x="2" y="4" width="1" height="6" fill="#f6c39a"/>
-          <rect x="17" y="4" width="1" height="6" fill="#f6c39a"/>
-          <rect x="7" y="3" width="1" height="1" fill="#e8a678"/>
-          <rect x="10" y="3" width="2" height="1" fill="#e8a678"/>
-          <rect x="14" y="3" width="1" height="1" fill="#e8a678"/>
-          <!-- 眯眼（横向 1px） -->
-          <rect x="6" y="7" width="2" height="1" fill="#3d2f28"/>
-          <rect x="13" y="7" width="2" height="1" fill="#3d2f28"/>
-          <rect x="10" y="8" width="1" height="1" fill="#e88aa5"/>
-          <rect x="9" y="9" width="1" height="1" fill="#3d2f28"/>
-          <rect x="11" y="9" width="1" height="1" fill="#3d2f28"/>
-          <rect x="4" y="8" width="1" height="1" fill="#f2a9c2"/>
-          <rect x="16" y="8" width="1" height="1" fill="#f2a9c2"/>
-          <rect x="4" y="11" width="12" height="6" fill="#f6c39a"/>
-          <rect x="5" y="17" width="2" height="1" fill="#e8a678"/>
-          <rect x="9" y="17" width="2" height="1" fill="#e8a678"/>
-          <rect x="13" y="17" width="2" height="1" fill="#e8a678"/>
-          <rect x="6" y="16" width="2" height="1" fill="#fbd9b8"/>
-          <rect x="12" y="16" width="2" height="1" fill="#fbd9b8"/>
-          <!-- 尾巴 B：放平 -->
-          <rect x="16" y="15" width="3" height="1" fill="#f6c39a"/>
+          <!-- 竖耳 -->
+          <rect x="3" y="0" width="2" height="3" fill="#b57a45"/>
+          <rect x="4" y="1" width="1" height="2" fill="#a86a38"/>
+          <rect x="17" y="0" width="2" height="3" fill="#b57a45"/>
+          <rect x="17" y="1" width="1" height="2" fill="#a86a38"/>
+          <rect x="4" y="1" width="13" height="2" fill="#f0c987"/>
+          <rect x="3" y="3" width="15" height="8" fill="#f0c987"/>
+          <rect x="6" y="4" width="1" height="1" fill="#c99a55"/>
+          <rect x="14" y="4" width="1" height="1" fill="#c99a55"/>
+          <!-- 眯眼（开心） -->
+          <rect x="6" y="6" width="2" height="1" fill="#3a2c22"/>
+          <rect x="13" y="6" width="2" height="1" fill="#3a2c22"/>
+          <rect x="8" y="8" width="5" height="3" fill="#fbe9c4"/>
+          <rect x="10" y="8" width="1" height="1" fill="#3a2c22"/>
+          <rect x="9" y="10" width="1" height="1" fill="#3a2c22"/>
+          <rect x="12" y="10" width="1" height="1" fill="#3a2c22"/>
+          <!-- 长舌头 -->
+          <rect x="10" y="10" width="2" height="2" fill="#ef9aa5"/>
+          <rect x="4" y="7" width="1" height="1" fill="#f2b8a0"/>
+          <rect x="16" y="7" width="1" height="1" fill="#f2b8a0"/>
+          <rect x="5" y="11" width="11" height="6" fill="#f0c987"/>
+          <rect x="6" y="17" width="9" height="1" fill="#e8bd72"/>
+          <rect x="9" y="12" width="3" height="4" fill="#fbe9c4"/>
+          <rect x="6" y="16" width="2" height="1" fill="#fbe9c4"/>
+          <rect x="13" y="16" width="2" height="1" fill="#fbe9c4"/>
+          <!-- 尾巴 B（平伸） -->
+          <rect x="16" y="13" width="3" height="1" fill="#c99a55"/>
         </g>
       </svg>
     </button>
   </div>
   <script>
-    const cat = document.getElementById('cat');
+    const dog = document.getElementById('dog');
     const desktop = window.desktop;
 
-    // 呼吸：帧 A ↔ 帧 B（600ms 节奏，克制不吵）
-    let frame = 0;
-    setInterval(() => {
-      frame = 1 - frame;
-      cat.classList.toggle('breathing', frame === 1);
-    }, 900);
+    // 两帧动画：常态 ↔ 兴奋（拖动时立即兴奋）
+    let excited = false;
+    let timer = null;
+    const setExcited = (v) => {
+      if (excited === v) return;
+      excited = v;
+      dog.classList.toggle('excited', v);
+    };
+    // 闲时偶尔开心一下（8~14 秒随机）
+    const scheduleIdle = () => {
+      timer = setTimeout(() => {
+        setExcited(true);
+        setTimeout(() => { if (!dragging) setExcited(false); }, 1400);
+        scheduleIdle();
+      }, 8000 + Math.random() * 6000);
+    };
+    scheduleIdle();
 
-    // 按下即拖动（位移>3px 进入拖动态）；原地点击 = 开关面板
+    // 拖动：按下位移>3px 即进入拖动态；原地点击 = 开关面板
     let pressed = false;
     let dragging = false;
     let startX = 0;
     let startY = 0;
 
-    cat.addEventListener('mousedown', (e) => {
+    dog.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
       pressed = true;
       dragging = false;
@@ -154,6 +159,7 @@
       const dy = e.screenY - startY;
       if (!dragging && Math.hypot(dx, dy) > 3) {
         dragging = true;
+        setExcited(true);
         desktop?.dragStart();
       }
       if (dragging) desktop?.dragMove();
@@ -162,7 +168,14 @@
     window.addEventListener('mouseup', () => {
       if (!pressed) return;
       pressed = false;
-      if (!dragging) desktop?.toggleDashboard();
+      if (!dragging) {
+        // 点击瞬间也开心一下
+        setExcited(true);
+        setTimeout(() => { if (!dragging) setExcited(false); }, 1200);
+        desktop?.toggleDashboard();
+      } else {
+        setExcited(false);
+      }
       dragging = false;
     });
 

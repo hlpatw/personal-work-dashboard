@@ -122,10 +122,10 @@ async function ensureServer() {
 function createPetWindow() {
   const { workArea } = require('electron').screen.getPrimaryDisplay();
   petWin = new BrowserWindow({
-    width: 60,
-    height: 62,
-    x: workArea.x + workArea.width - 76,
-    y: workArea.y + workArea.height - 76,
+    width: 62,
+    height: 64,
+    x: workArea.x + workArea.width - 78,
+    y: workArea.y + workArea.height - 78,
     frame: false,
     transparent: true,
     resizable: false,
@@ -231,20 +231,19 @@ async function selfCheck() {
   }
 }
 
-/** 宠物拖动：光标驱动窗口移动（球体即拖动手柄） */
-let dragOrigin = null; // { cursor: {x,y}, win: {x,y} }
+/** 宠物拖动：光标驱动窗口移动（渲染进程发增量位移，主进程 setPosition） */
+let dragBase = null; // { cursor: {x,y}, win: {x,y} }
 ipcMain.on('pet-drag-start', () => {
-  if (!petWin) return;
+  if (!petWin || petWin.isDestroyed()) return;
   const { screen: electronScreen } = require('electron');
-  const cursor = electronScreen.getCursorScreenPoint();
   const [x, y] = petWin.getPosition();
-  dragOrigin = { cursor, win: { x, y } };
+  dragBase = { cursor: electronScreen.getCursorScreenPoint(), win: { x, y } };
 });
 ipcMain.on('pet-drag-move', () => {
-  if (!petWin || !dragOrigin) return;
+  if (!petWin || petWin.isDestroyed() || !dragBase) return;
   const { screen: electronScreen } = require('electron');
-  const cursor = electronScreen.getCursorScreenPoint();
-  petWin.setPosition(dragOrigin.win.x + (cursor.x - dragOrigin.cursor.x), dragOrigin.win.y + (cursor.y - dragOrigin.cursor.y));
+  const c = electronScreen.getCursorScreenPoint();
+  petWin.setPosition(dragBase.win.x + (c.x - dragBase.cursor.x), dragBase.win.y + (c.y - dragBase.cursor.y));
 });
 
 app.whenReady().then(async () => {

@@ -10,4 +10,6 @@ contextBridge.exposeInMainWorld('desktop', {
   dragStart: () => ipcRenderer.send('pet-drag-start'),
   /** 拖动中：主进程按光标位移移动窗口 */
   dragMove: () => ipcRenderer.send('pet-drag-move'),
+  /** 拖动结束 */
+  dragEnd: () => ipcRenderer.send('pet-drag-move'),
 });
