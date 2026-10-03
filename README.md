@@ -56,11 +56,12 @@ npm run desktop    # 启动桌面小宠物（首次需已 npm install，会下�
 npm run dist       # 一键：构建前端 → 编译后端 → 生成安装包
 ```
 
-产物在 `release\个人工作面板-安装包-x.y.z.exe`（版本号随 desktop/package.json），双击安装后：
+产物在 `release\personal-work-dashboard-setup-x.y.z.exe`（版本号随 `desktop/package.json`），双击安装后：
 
 - 开始菜单/桌面启动「个人工作面板」，无需任何命令行和 Node 环境
 - 后端编译产物内置于程序中（进程内运行，零外部依赖）
-- 数据存放于 `%APPDATA%\个人工作面板\data\dashboard.db`，全新空白开始
+- 安装版使用独立内置 API（默认端口 `3210`），不会复用开发模式的 `3001` 端口
+- 数据存放于 `%APPDATA%\desktop\data\dashboard.db`，全新空白开始
 - **可直接分发**：把安装包发给任何 Windows 10/11 用户即可；各用户数据完全独立；未签名应用首次运行若杀软提示，选"仍要运行"即可
 
 其他命令：
@@ -86,7 +87,7 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 
 - **主题**：侧栏底部按钮切换深/浅色（默认专业暗色），选择持久化，刷新不闪烁
 - **桌面宠物**：像素柴犬常驻右下角；平时点击穿透不挡其他窗口，悬停激活（发光提示）后可点击开面板/拖动/右键菜单
-- **数据**：存储于 `server/data/dashboard.db`（SQLite，WAL 模式），重启不丢失；安装包版存于 `%APPDATA%\个人工作面板\`
+- **数据**：存储于 `server/data/dashboard.db`（SQLite，WAL 模式），重启不丢失；安装包版存于 `%APPDATA%\desktop\data\dashboard.db`
 
 ## 项目结构
 
