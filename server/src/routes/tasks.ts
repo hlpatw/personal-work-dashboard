@@ -29,6 +29,14 @@ const taskSchema = z.object({
     .optional()
     .default([]),
   goal_id: z.number().int().nullable().optional().default(null),
+  // Base64 Data URL（前端已压缩；2M 字符上限约对应 1.5MB 原图）
+  image_url: z
+    .string()
+    .startsWith('data:image/', '图片格式应为 data:image/ 开头的 Base64')
+    .max(2_000_000, '图片过大，请压缩后重试')
+    .nullable()
+    .optional()
+    .default(null),
   subtasks: z
     .array(
       z.object({
@@ -143,8 +151,8 @@ export default function taskRoutes(db: Db): Router {
     const input = taskSchema.parse(req.body);
     const result = run(
       db,
-      `INSERT INTO tasks (title, description, category, priority, status, due_date, estimated_minutes, tags, goal_id, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO tasks (title, description, category, priority, status, due_date, estimated_minutes, tags, goal_id, image_url, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       input.title,
       input.description,
       input.category,
@@ -154,6 +162,7 @@ export default function taskRoutes(db: Db): Router {
       input.estimated_minutes,
       JSON.stringify(input.tags),
       input.goal_id,
+      input.image_url,
       req.userId!
     );
     const id = Number(result.lastInsertRowid);
@@ -182,7 +191,7 @@ export default function taskRoutes(db: Db): Router {
     run(
       db,
       `UPDATE tasks SET title = ?, description = ?, category = ?, priority = ?, status = ?,
-        due_date = ?, estimated_minutes = ?, tags = ?, goal_id = ?,
+        due_date = ?, estimated_minutes = ?, tags = ?, goal_id = ?, image_url = ?,
         completed_at = CASE WHEN ? = 'done' THEN datetime('now','localtime') ELSE NULL END,
         updated_at = datetime('now','localtime')
        WHERE id = ? AND user_id = ?`,
@@ -195,6 +204,7 @@ export default function taskRoutes(db: Db): Router {
       input.estimated_minutes,
       JSON.stringify(input.tags),
       input.goal_id,
+      input.image_url,
       input.status,
       id,
       req.userId!

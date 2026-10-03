@@ -26,6 +26,7 @@ export interface Task {
   estimated_minutes: number | null;
   tags: string[];
   goal_id: number | null;
+  image_url: string | null;
   subtask_total: number;
   subtask_done: number;
   created_at: string;
@@ -39,7 +40,7 @@ export interface SubtaskInput {
 
 export type TaskInput = Pick<
   Task,
-  'title' | 'description' | 'category' | 'priority' | 'status' | 'due_date' | 'estimated_minutes' | 'tags' | 'goal_id'
+  'title' | 'description' | 'category' | 'priority' | 'status' | 'due_date' | 'estimated_minutes' | 'tags' | 'goal_id' | 'image_url'
 > & { subtasks: SubtaskInput[] };
 
 export type GoalStatus = 'active' | 'done' | 'archived';

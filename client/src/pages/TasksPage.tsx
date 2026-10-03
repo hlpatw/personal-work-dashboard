@@ -16,6 +16,7 @@ import {
 import { formatCN, todayStr } from '../lib/date';
 import { formatDuration } from '../lib/format';
 import TaskFormDialog from '../components/TaskFormDialog';
+import Lightbox from '../components/Lightbox';
 import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
@@ -29,6 +30,7 @@ export default function TasksPage() {
   const [filters, setFilters] = useState<TaskFilters>({ status: '', category: '', priority: '', q: '' });
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   // 支持 URL 参数预筛选（概览卡片 /tasks?status=todo、目标卡 /tasks?goal=1）
   const [searchParams] = useSearchParams();
@@ -171,6 +173,19 @@ export default function TasksPage() {
 
                   <span className={`h-2 w-2 shrink-0 rounded-full ${PRIORITY_DOT[task.priority]}`} title={`优先级：${PRIORITY_LABELS[task.priority]}`} />
 
+                  {task.image_url && (
+                    <img
+                      src={task.image_url}
+                      alt=""
+                      className="h-7 w-7 shrink-0 cursor-zoom-in rounded-md object-cover ring-1 ring-black/[0.06] dark:ring-white/[0.08]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLightbox(task.image_url!);
+                      }}
+                      title="查看配图"
+                    />
+                  )}
+
                   <div className="min-w-0 flex-1">
                     <p className={`truncate text-sm font-medium ${task.status === 'done' ? 'text-zinc-400 line-through dark:text-zinc-500' : ''}`}>
                       {task.title}
@@ -248,6 +263,7 @@ export default function TasksPage() {
       {(creating || editing) && (
         <TaskFormDialog task={editing} onClose={() => { setCreating(false); setEditing(null); }} />
       )}
+      {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }

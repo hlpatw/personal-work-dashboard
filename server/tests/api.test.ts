@@ -99,6 +99,25 @@ describe('tasks', () => {
     expect(res.body.due_date).toBe(todayStr(5));
   });
 
+  it('任务支持贴图（image_url）', async () => {
+    const img = 'data:image/png;base64,iVBORw0KGgo=';
+    const created = await request(app).post('/api/tasks').send({ title: '带图任务', image_url: img });
+    expect(created.status).toBe(201);
+    expect(created.body.image_url).toBe(img);
+
+    // 更新清除
+    const cleared = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: '带图任务', image_url: null });
+    expect(cleared.body.image_url).toBeNull();
+
+    // 默认 null / 非法前缀 400
+    const plain = await request(app).post('/api/tasks').send({ title: '无图任务' });
+    expect(plain.body.image_url).toBeNull();
+    const bad = await request(app).post('/api/tasks').send({ title: 'x', image_url: 'not-a-data-url' });
+    expect(bad.status).toBe(400);
+  });
+
   it('支持预计完成时长字段', async () => {
     const created = await request(app)
       .post('/api/tasks')

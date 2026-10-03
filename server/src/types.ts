@@ -38,6 +38,7 @@ export interface Task {
   estimated_minutes: number | null;
   tags: string[];
   goal_id: number | null;
+  image_url: string | null;
   subtask_total: number;
   subtask_done: number;
   created_at: string;

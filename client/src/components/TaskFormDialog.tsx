@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from './Modal';
+import ImageInput from './ImageInput';
 import { createTask, updateTask, fetchSubtasks } from '../api/tasks';
 import { fetchGoals } from '../api/goals';
 import {
@@ -37,6 +38,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
     due_date: task?.due_date ?? null,
     estimated_minutes: task?.estimated_minutes ?? null,
     goal_id: task?.goal_id ?? null,
+    image_url: task?.image_url ?? null,
   });
   const [subtasks, setSubtasks] = useState<SubtaskInput[]>([]);
   const [subtaskDraft, setSubtaskDraft] = useState('');
@@ -103,12 +105,15 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500">描述</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="block text-xs font-medium text-zinc-500">描述</label>
+            <ImageInput value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} />
+          </div>
           <textarea
             className={`${inputCls} h-14 resize-none`}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="补充说明（可选）"
+            placeholder="补充说明（可选；可 Ctrl+V 粘贴截图作为任务配图）"
           />
         </div>
         {/* 属性网格：紧凑四列两行（800px 矮屏友好） */}

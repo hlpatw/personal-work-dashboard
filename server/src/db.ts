@@ -61,6 +61,7 @@ export function initDb(path: string): Db {
       estimated_minutes INTEGER,
       tags         TEXT    NOT NULL DEFAULT '[]',
       goal_id      INTEGER REFERENCES goals(id) ON DELETE SET NULL,
+      image_url    TEXT,
       user_id      INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
       created_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
       updated_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
@@ -119,6 +120,7 @@ export function initDb(path: string): Db {
   // 贴图（Base64 Data URL，可空）
   migrateAddColumn(db, 'inspirations', 'image_url', 'TEXT');
   migrateAddColumn(db, 'goals', 'image_url', 'TEXT');
+  migrateAddColumn(db, 'tasks', 'image_url', 'TEXT');
 
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_user     ON tasks(user_id);
