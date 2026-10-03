@@ -23,21 +23,6 @@ let petWin = null;
 let dashWin = null;
 let quitting = false;
 
-/** 打包模式：首次运行时尝试导入开发目录的数据库（个人机器的数据迁移） */
-function importDevDb(dbPath) {
-  const fs = require('node:fs');
-  try {
-    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-    const DEV_DB = 'D:\\工作\\个人工作面板\\server\\data\\dashboard.db';
-    if (!fs.existsSync(dbPath) && fs.existsSync(DEV_DB)) {
-      fs.copyFileSync(DEV_DB, dbPath);
-      console.log('[desktop] 已从开发目录导入历史数据');
-    }
-  } catch (err) {
-    console.error(`[desktop] 数据导入跳过: ${err.message}`);
-  }
-}
-
 /** 探测 API 是否已就绪（agent:false 避免连接池复用启动中端口的诡异挂起） */
 function probe(timeoutMs = 1500) {
   return new Promise((resolve) => {
@@ -66,7 +51,7 @@ async function ensureServer() {
     const bundle = path.join(process.resourcesPath, 'server-bundle', 'app.cjs');
     if (!existsSync(bundle)) throw new Error('缺少内置后端文件，请重新安装');
     const dbPath = path.join(app.getPath('userData'), 'data', 'dashboard.db');
-    importDevDb(dbPath);
+    require('node:fs').mkdirSync(path.dirname(dbPath), { recursive: true });
     const { createApp } = require(bundle);
     const expressApp = createApp(dbPath, {
       staticDir: path.join(process.resourcesPath, 'client-dist'),
