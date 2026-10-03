@@ -1,8 +1,8 @@
 /**
  * 桌面小宠物 + 弹窗面板（Electron 主进程）
- * - 启动时拉起后端 API（tsx 运行 server/src/index.ts，端口 3001）
+ * - 开发模式复用本地 API（默认端口 3001）；安装包使用独立内置 API（默认端口 3210）
  * - 桌面右下角常驻一只置顶小宠物（pet.html）
- * - 点宠物 → 弹出/收起面板窗口（加载 http://localhost:3001）
+ * - 点宠物 → 弹出/收起面板窗口
  * - 右键宠物 → 菜单（打开面板 / 退出）
  */
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
@@ -13,7 +13,7 @@ const path = require('node:path');
 
 // 透明悬浮球需要 GPU 合成，保持硬件加速开启（若个别驱动崩溃可改回 disableHardwareAcceleration）
 
-const PORT = Number(process.env.PORT || 3001);
+const PORT = Number(process.env.PORT || (app.isPackaged ? 3210 : 3001));
 const BASE_URL = `http://localhost:${PORT}`;
 const ROOT = path.join(__dirname, '..');
 const SHOT_DIR = process.env.ELECTRON_SHOT_DIR; // 设置时截图自检并退出
@@ -150,7 +150,7 @@ function createDashboardWindow() {
     height: 800,
     minWidth: 960,
     minHeight: 640,
-    title: '个人工作面板',
+    title: '个人工作面板 · Made by Kexuan',
     show: false,
     backgroundColor: '#1c1917',
     webPreferences: {
@@ -188,6 +188,7 @@ function petMenu() {
   Menu.buildFromTemplate([
     { label: '打开面板', click: () => toggleDashboard() },
     { type: 'separator' },
+    { label: '个人工作面板 · Made by Kexuan', enabled: false },
     {
       label: '退出',
       click: () => {

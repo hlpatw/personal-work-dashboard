@@ -16,6 +16,6 @@
     "oneClick": true,
     "perMachine": false,
     "deleteAppDataOnUninstall": false,
-    "artifactName": "个人工作面板-安装包-${version}.exe"
+    "artifactName": "personal-work-dashboard-setup-${version}.exe"
   }
 }

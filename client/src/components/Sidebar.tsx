@@ -105,6 +105,11 @@ export default function Sidebar() {
         <span className="hidden md:inline">{theme === 'dark' ? '浅色模式' : '深色模式'}</span>
       </button>
 
+      {/* 作者署名 */}
+      <p className="mt-1 hidden select-none text-center text-[10px] tracking-wide text-zinc-400/70 dark:text-zinc-600 md:block">
+        Made by Kexuan
+      </p>
+
       {editing && (
         <Modal title="个人信息" onClose={() => setEditing(false)}>
           <div className="space-y-3">
