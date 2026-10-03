@@ -91,7 +91,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
 
   return (
     <Modal title={task ? '编辑任务' : '新建任务'} onClose={onClose}>
-      <form onSubmit={submit} className="space-y-3">
+      <form onSubmit={submit} className="space-y-2.5">
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500">标题 *</label>
           <input
@@ -105,13 +105,14 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500">描述</label>
           <textarea
-            className={`${inputCls} h-20 resize-none`}
+            className={`${inputCls} h-14 resize-none`}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             placeholder="补充说明（可选）"
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        {/* 属性网格：紧凑四列两行（800px 矮屏友好） */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-500">分类</label>
             <select
@@ -150,7 +151,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-500">预计时长（分钟）</label>
+            <label className="mb-1 block text-xs font-medium text-zinc-500">时长（分钟）</label>
             <input
               type="number"
               min={0}
@@ -163,7 +164,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
               placeholder="如 45"
             />
           </div>
-          <div className="col-span-2">
+          <div>
             <label className="mb-1 block text-xs font-medium text-zinc-500">关联目标</label>
             <select
               className={inputCls}
@@ -174,6 +175,20 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
               {(goals ?? []).map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-500">状态</label>
+            <select
+              className={inputCls}
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value as TaskInput['status'] })}
+            >
+              {TASK_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -246,23 +261,8 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
           </div>
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500">状态</label>
-          <select
-            className={inputCls}
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value as TaskInput['status'] })}
-          >
-            {TASK_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {error && <p className="text-xs text-red-500">{error}</p>}
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-1">
           <button
             type="button"
             onClick={onClose}

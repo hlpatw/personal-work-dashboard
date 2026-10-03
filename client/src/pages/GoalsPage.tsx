@@ -255,7 +255,7 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="新建目标" onClose={onClose}>
-      <form onSubmit={submit} className="space-y-3">
+      <form onSubmit={submit} className="space-y-2.5">
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500">目标 *</label>
           <input
