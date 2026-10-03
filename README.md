@@ -1,6 +1,15 @@
-# 个人工作面板
+# 🌸 个人工作面板 · Personal Work Dashboard
 
-个人使用的日常工作面板：**任务待办管理 + 日程日历 + 数据统计**，深浅色主题可切换（默认深色），全中文界面。
+[![License: MIT](https://img.shields.io/badge/License-MIT-rose.svg)](./LICENSE)
+[![React 19](https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Electron](https://img.shields.io/badge/Electron-39-47848F?logo=electron&logoColor=white)](https://www.electronjs.org)
+[![SQLite](https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white)](https://nodejs.org/api/sqlite.html)
+[![Release](https://img.shields.io/badge/下载-v1.1.0-rose?logo=github)](../../releases)
+
+> 🐕 一只住在桌面角落的像素柴犬：点亮它开面板，按住它拖到任意位置，平时点击穿透绝不挡你操作。
+>
+> 任务待办 · 日程日历 · 长期目标 · 此刻灵感 · 数据统计 —— 数据全部留在自己电脑上。
 
 ## 技术栈
 
