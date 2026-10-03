@@ -330,7 +330,7 @@ function InspirationQuick() {
   const submit = () => {
     const content = draft.trim();
     if (!content) return;
-    createMutation.mutate({ content, category: '灵感' });
+    createMutation.mutate({ content, category: '灵感', image_url: null });
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -361,7 +361,14 @@ function InspirationQuick() {
       {recent.length > 0 ? (
         <ul className="space-y-2">
           {recent.map((item) => (
-            <li key={item.id} className="flex items-baseline gap-2 text-sm">
+            <li key={item.id} className="flex items-center gap-2 text-sm">
+              {item.image_url && (
+                <img
+                  src={item.image_url}
+                  alt=""
+                  className="h-5 w-5 shrink-0 rounded object-cover ring-1 ring-black/[0.06] dark:ring-white/[0.08]"
+                />
+              )}
               <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] ${INSPIRATION_CATEGORY_META[item.category]}`}>
                 {item.category}
               </span>

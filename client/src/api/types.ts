@@ -50,13 +50,14 @@ export interface Goal {
   note: string;
   target_date: string | null;
   status: GoalStatus;
+  image_url: string | null;
   task_total: number;
   task_done: number;
   created_at: string;
   updated_at: string;
 }
 
-export type GoalInput = Pick<Goal, 'title' | 'note' | 'target_date' | 'status'>;
+export type GoalInput = Pick<Goal, 'title' | 'note' | 'target_date' | 'status' | 'image_url'>;
 
 export const GOAL_STATUS_LABELS: Record<GoalStatus, string> = {
   active: '进行中',
@@ -85,10 +86,11 @@ export interface Inspiration {
   id: number;
   content: string;
   category: InspirationCategory;
+  image_url: string | null;
   created_at: string;
 }
 
-export type InspirationInput = Pick<Inspiration, 'content' | 'category'>;
+export type InspirationInput = Pick<Inspiration, 'content' | 'category' | 'image_url'>;
 
 /** 灵感类型徽章（中性专业风） */
 export const INSPIRATION_CATEGORY_META: Record<InspirationCategory, string> = {

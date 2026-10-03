@@ -22,6 +22,7 @@ export interface Inspiration {
   id: number;
   content: string;
   category: InspirationCategory;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -63,6 +64,7 @@ export interface Goal {
   note: string;
   target_date: string | null;
   status: GoalStatus;
+  image_url: string | null;
   task_total: number;
   task_done: number;
   created_at: string;

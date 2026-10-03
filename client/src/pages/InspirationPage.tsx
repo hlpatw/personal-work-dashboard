@@ -12,6 +12,8 @@ import PageHeader from '../components/PageHeader';
 import EmptyState from '../components/EmptyState';
 import Card from '../components/Card';
 import TaskFormDialog from '../components/TaskFormDialog';
+import ImageInput from '../components/ImageInput';
+import Lightbox from '../components/Lightbox';
 import { IconTrash } from '../components/icons';
 
 const selectCls =
@@ -22,8 +24,10 @@ export default function InspirationPage() {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [draft, setDraft] = useState('');
+  const [draftImage, setDraftImage] = useState<string | null>(null);
   const [draftCategory, setDraftCategory] = useState<InspirationCategory>('灵感');
   const [converting, setConverting] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   const { data: list, isLoading, isError, error } = useQuery({
     queryKey: ['inspirations', { q, category }],
@@ -37,6 +41,7 @@ export default function InspirationPage() {
     onSuccess: () => {
       invalidate();
       setDraft('');
+      setDraftImage(null);
     },
   });
 
@@ -47,8 +52,9 @@ export default function InspirationPage() {
 
   const submitDraft = () => {
     const content = draft.trim();
-    if (!content) return;
-    createMutation.mutate({ content, category: draftCategory });
+    if (!content && !draftImage) return;
+    // 纯图无文字时给个占位，满足后端 content 非空约束
+    createMutation.mutate({ content: content || '（图片）', category: draftCategory, image_url: draftImage });
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -84,12 +90,13 @@ export default function InspirationPage() {
         }
       />
 
-      {/* 常驻快速输入：随手记的核心 */}
+      {/* 常驻快速输入：随手记的核心（📎 贴图 / Ctrl+V 粘贴截图） */}
       <Card className="p-3">
         <div className="flex gap-2">
+          <ImageInput value={draftImage} onChange={setDraftImage} />
           <input
             className="flex-1 rounded-lg bg-zinc-100 px-3.5 py-2.5 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
-            placeholder="迸发了什么想法？记下来…"
+            placeholder="迸发了什么想法？记下来…（可 Ctrl+V 粘贴截图）"
             value={draft}
             maxLength={500}
             onChange={(e) => setDraft(e.target.value)}
@@ -109,7 +116,7 @@ export default function InspirationPage() {
           </select>
           <button
             onClick={submitDraft}
-            disabled={!draft.trim() || createMutation.isPending}
+            disabled={(!draft.trim() && !draftImage) || createMutation.isPending}
             className="shrink-0 rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
           >
             记下
@@ -135,15 +142,17 @@ export default function InspirationPage() {
               onDelete={() => {
                 if (window.confirm('删除这条灵感？')) deleteMutation.mutate(item.id);
               }}
-              onConvert={() => setConverting(item.content)}
+              onConvert={() => setConverting(item.content === '（图片）' ? '' : item.content)}
+              onViewImage={(src) => setLightbox(src)}
             />
           ))}
         </div>
       )}
 
-      {converting && (
+      {converting !== null && (
         <TaskFormDialog task={null} initialTitle={converting} onClose={() => setConverting(null)} />
       )}
+      {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
@@ -152,10 +161,12 @@ function InspirationCard({
   item,
   onDelete,
   onConvert,
+  onViewImage,
 }: {
   item: Inspiration;
   onDelete: () => void;
   onConvert: () => void;
+  onViewImage: (src: string) => void;
 }) {
   return (
     <Card className="group p-4 transition-all group-hover:shadow-lg group-hover:shadow-black/[0.06] dark:group-hover:shadow-black/40">
@@ -178,6 +189,14 @@ function InspirationCard({
           </button>
         </div>
       </div>
+      {item.image_url && (
+        <img
+          src={item.image_url}
+          alt="灵感配图"
+          className="mt-2.5 max-h-48 cursor-zoom-in rounded-lg object-cover ring-1 ring-black/[0.05] transition-opacity hover:opacity-90 dark:ring-white/[0.07]"
+          onClick={() => onViewImage(item.image_url!)}
+        />
+      )}
       <div className="mt-2.5 flex items-center gap-2 text-xs">
         <span className={`rounded-md px-1.5 py-0.5 ${INSPIRATION_CATEGORY_META[item.category]}`}>
           {item.category}

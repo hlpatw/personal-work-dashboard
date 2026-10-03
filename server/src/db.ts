@@ -38,6 +38,7 @@ export function initDb(path: string): Db {
       note        TEXT    NOT NULL DEFAULT '',
       target_date TEXT,
       status      TEXT    NOT NULL DEFAULT 'active' CHECK(status IN ('active','done','archived')),
+      image_url   TEXT,
       user_id     INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
       created_at  TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
       updated_at  TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
@@ -74,6 +75,7 @@ export function initDb(path: string): Db {
       content    TEXT    NOT NULL CHECK(length(trim(content)) > 0),
       category   TEXT    NOT NULL DEFAULT '灵感'
                  CHECK(category IN ('灵感','工作','生活','心情')),
+      image_url  TEXT,
       user_id    INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
       created_at TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
     );
@@ -114,6 +116,9 @@ export function initDb(path: string): Db {
   // 标签（JSON 数组文本）与目标关联
   migrateAddColumn(db, 'tasks', 'tags', "TEXT NOT NULL DEFAULT '[]'");
   migrateAddColumn(db, 'tasks', 'goal_id', 'INTEGER REFERENCES goals(id) ON DELETE SET NULL');
+  // 贴图（Base64 Data URL，可空）
+  migrateAddColumn(db, 'inspirations', 'image_url', 'TEXT');
+  migrateAddColumn(db, 'goals', 'image_url', 'TEXT');
 
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_user     ON tasks(user_id);

@@ -252,6 +252,40 @@ describe('此刻灵感', () => {
   });
 });
 
+describe('贴图（灵感与目标）', () => {
+  const tinyImg = 'data:image/png;base64,iVBORw0KGgo='; // 极小合法 Data URL
+
+  it('灵感可带图，字段原样返回；默认为 null', async () => {
+    const withImg = await request(app)
+      .post('/api/inspirations')
+      .send({ content: '带图灵感', image_url: tinyImg });
+    expect(withImg.status).toBe(201);
+    expect(withImg.body.image_url).toBe(tinyImg);
+
+    const noImg = await request(app).post('/api/inspirations').send({ content: '无图灵感' });
+    expect(noImg.body.image_url).toBeNull();
+  });
+
+  it('灵感图片超限（>2M 字符）与非图片前缀返回 400', async () => {
+    const big = 'data:image/png;base64,' + 'A'.repeat(2_000_001);
+    expect((await request(app).post('/api/inspirations').send({ content: 'x', image_url: big })).status).toBe(400);
+    expect(
+      (await request(app).post('/api/inspirations').send({ content: 'x', image_url: 'data:text/plain;base64,eA==' })).status
+    ).toBe(400);
+  });
+
+  it('目标可带图创建与更新，更新可清除图片', async () => {
+    const g = await request(app).post('/api/goals').send({ title: '带图目标', image_url: tinyImg });
+    expect(g.status).toBe(201);
+    expect(g.body.image_url).toBe(tinyImg);
+
+    const updated = await request(app)
+      .put(`/api/goals/${g.body.id}`)
+      .send({ title: '带图目标', image_url: null });
+    expect(updated.body.image_url).toBeNull();
+  });
+});
+
 describe('schedules', () => {
   it('创建日程 201', async () => {
     const res = await request(app)

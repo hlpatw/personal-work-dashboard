@@ -14,7 +14,8 @@ import inspirationRoutes from './routes/inspirations.js';
 export function createApp(dbPath: string, opts?: { staticDir?: string }) {
   const db = initDb(dbPath);
   const app = express();
-  app.use(express.json());
+  // 默认 100KB 不够装 Base64 贴图（压缩后约 300~400KB），放宽到 3MB
+  app.use(express.json({ limit: '3mb' }));
 
   // —— 多账号扩展接缝 ——
   // 单机版：所有请求归属内置本地用户（id=1）。

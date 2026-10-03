@@ -13,6 +13,14 @@ const goalSchema = z.object({
     .optional()
     .default(null),
   status: z.enum(['active', 'done', 'archived']).optional().default('active'),
+  // Base64 Data URL（前端已压缩；2M 字符上限约对应 1.5MB 原图）
+  image_url: z
+    .string()
+    .startsWith('data:image/', '图片格式应为 data:image/ 开头的 Base64')
+    .max(2_000_000, '图片过大，请压缩后重试')
+    .nullable()
+    .optional()
+    .default(null),
 });
 
 const GOAL_SELECT = `
@@ -52,11 +60,12 @@ export default function goalRoutes(db: Db): Router {
     const input = goalSchema.parse(req.body);
     const result = run(
       db,
-      `INSERT INTO goals (title, note, target_date, status, user_id) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO goals (title, note, target_date, status, image_url, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
       input.title,
       input.note,
       input.target_date,
       input.status,
+      input.image_url,
       req.userId!
     );
     res.status(201).json(getGoal(Number(result.lastInsertRowid), req.userId!));
@@ -72,12 +81,13 @@ export default function goalRoutes(db: Db): Router {
     const input = goalSchema.parse(req.body);
     run(
       db,
-      `UPDATE goals SET title = ?, note = ?, target_date = ?, status = ?, updated_at = datetime('now','localtime')
+      `UPDATE goals SET title = ?, note = ?, target_date = ?, status = ?, image_url = ?, updated_at = datetime('now','localtime')
        WHERE id = ? AND user_id = ?`,
       input.title,
       input.note,
       input.target_date,
       input.status,
+      input.image_url,
       id,
       req.userId!
     );

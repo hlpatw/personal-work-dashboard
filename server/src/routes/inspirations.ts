@@ -6,6 +6,14 @@ import { INSPIRATION_CATEGORIES, type Inspiration } from '../types.js';
 const inspirationSchema = z.object({
   content: z.string().trim().min(1, '内容不能为空').max(500, '最多 500 字'),
   category: z.enum(INSPIRATION_CATEGORIES).optional().default('灵感'),
+  // Base64 Data URL（前端已压缩到 ~300KB 内；2M 字符上限约对应 1.5MB 原图）
+  image_url: z
+    .string()
+    .startsWith('data:image/', '图片格式应为 data:image/ 开头的 Base64')
+    .max(2_000_000, '图片过大，请压缩后重试')
+    .nullable()
+    .optional()
+    .default(null),
 });
 
 export default function inspirationRoutes(db: Db): Router {
@@ -38,9 +46,10 @@ export default function inspirationRoutes(db: Db): Router {
     const input = inspirationSchema.parse(req.body);
     const result = run(
       db,
-      'INSERT INTO inspirations (content, category, user_id) VALUES (?, ?, ?)',
+      'INSERT INTO inspirations (content, category, image_url, user_id) VALUES (?, ?, ?, ?)',
       input.content,
       input.category,
+      input.image_url,
       req.userId!
     );
     const created = row<Inspiration>(

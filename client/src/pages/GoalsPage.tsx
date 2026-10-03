@@ -9,6 +9,8 @@ import PageHeader from '../components/PageHeader';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';
 import Card from '../components/Card';
+import ImageInput from '../components/ImageInput';
+import Lightbox from '../components/Lightbox';
 import { IconTrash } from '../components/icons';
 
 const inputCls =
@@ -26,6 +28,7 @@ export default function GoalsPage() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<GoalStatus | ''>('');
   const [creating, setCreating] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   const { data: goals, isLoading, isError, error } = useQuery({
     queryKey: ['goals', statusFilter],
@@ -97,12 +100,14 @@ export default function GoalsPage() {
                   deleteMutation.mutate(g.id);
                 }
               }}
+              onViewImage={(src) => setLightbox(src)}
             />
           ))}
         </div>
       )}
 
       {creating && <GoalFormDialog onClose={() => setCreating(false)} />}
+      {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
@@ -111,10 +116,12 @@ function GoalCard({
   goal,
   onStatus,
   onDelete,
+  onViewImage,
 }: {
   goal: Goal;
   onStatus: (s: GoalStatus) => void;
   onDelete: () => void;
+  onViewImage: (src: string) => void;
 }) {
   const rate = goal.task_total === 0 ? 0 : Math.round((goal.task_done / goal.task_total) * 100);
   const animated = useCountUp(rate);
@@ -160,6 +167,15 @@ function GoalCard({
           </button>
         </div>
       </div>
+
+      {goal.image_url && (
+        <img
+          src={goal.image_url}
+          alt="目标配图"
+          className="mt-2.5 max-h-44 w-full cursor-zoom-in rounded-lg object-cover ring-1 ring-black/[0.05] transition-opacity hover:opacity-90 dark:ring-white/[0.07]"
+          onClick={() => onViewImage(goal.image_url!)}
+        />
+      )}
 
       {/* 进度 */}
       <div className="mt-3 flex items-center gap-3">
@@ -215,6 +231,7 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
     note: '',
     target_date: addDaysStr(toDateStr(new Date()), 90),
     status: 'active',
+    image_url: null,
   });
 
   const mutation = useMutation({
@@ -268,6 +285,10 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
             onChange={(e) => setForm({ ...form, target_date: e.target.value || null })}
           />
           <p className="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">默认 90 天后，可在任务里关联到该目标</p>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-500">配图（可选，可粘贴截图）</label>
+          <ImageInput value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} />
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
         <div className="flex justify-end gap-2 pt-2">
