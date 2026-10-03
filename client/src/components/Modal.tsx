@@ -23,8 +23,9 @@ export default function Modal({ title, onClose, children, footer }: ModalProps) 
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-2xl shadow-black/20 ring-1 ring-black/[0.06] dark:bg-[#1b1b20] dark:ring-white/[0.06]">
-        <div className="mb-4 flex items-center justify-between">
+      {/* 内容超高时可滚动：max-h 限制在视口内，头部固定、表单体滚动 */}
+      <div className="flex max-h-full w-full max-w-lg flex-col rounded-xl bg-white shadow-2xl shadow-black/20 ring-1 ring-black/[0.06] dark:bg-[#1b1b20] dark:ring-white/[0.06]">
+        <div className="flex shrink-0 items-center justify-between p-5 pb-4">
           <h2 className="text-base font-semibold">{title}</h2>
           <button
             onClick={onClose}
@@ -34,8 +35,8 @@ export default function Modal({ title, onClose, children, footer }: ModalProps) 
             ✕
           </button>
         </div>
-        {children}
-        {footer && <div className="mt-5 flex justify-end gap-2">{footer}</div>}
+        <div className="overflow-y-auto px-5 pb-5">{children}</div>
+        {footer && <div className="flex shrink-0 justify-end gap-2 p-5 pt-0">{footer}</div>}
       </div>
     </div>
   );
