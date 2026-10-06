@@ -46,3 +46,43 @@ html.dark * {
     animation: none;
   }
 }
+
+/* 柯基消息的 markdown 渲染（紧凑排版，适配聊天气泡） */
+.corgi-md p { margin: 0.25rem 0; }
+.corgi-md p:first-child { margin-top: 0; }
+.corgi-md p:last-child { margin-bottom: 0; }
+.corgi-md ul, .corgi-md ol { margin: 0.4rem 0; padding-left: 1.2rem; }
+.corgi-md li { margin: 0.15rem 0; }
+.corgi-md strong { font-weight: 600; }
+.corgi-md code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  background: rgba(0, 0, 0, 0.06);
+}
+.dark .corgi-md code { background: rgba(255, 255, 255, 0.1); }
+.corgi-md pre {
+  margin: 0.4rem 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.8em;
+  background: rgba(0, 0, 0, 0.06);
+}
+.dark .corgi-md pre { background: rgba(255, 255, 255, 0.07); }
+.corgi-md pre code { background: transparent; padding: 0; }
+.corgi-md h1, .corgi-md h2, .corgi-md h3 {
+  font-size: 0.95em;
+  font-weight: 600;
+  margin: 0.5rem 0 0.25rem;
+}
+.corgi-md blockquote {
+  margin: 0.4rem 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid rgba(244, 114, 182, 0.5);
+  color: inherit;
+  opacity: 0.85;
+}
+.corgi-md a { color: #f43f5e; text-decoration: underline; }
+.corgi-md table { border-collapse: collapse; margin: 0.4rem 0; font-size: 0.9em; }
+.corgi-md th, .corgi-md td { border: 1px solid rgba(120, 120, 130, 0.3); padding: 0.2rem 0.5rem; }

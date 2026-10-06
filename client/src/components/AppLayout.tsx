@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router';
 import Sidebar from './Sidebar';
+import CorgiSidebar from './corgi/CorgiSidebar';
 
 /** 专业风背景：仅顶部一抹极淡的玫瑰光晕 */
 function AuroraBackground() {
@@ -23,6 +24,7 @@ export default function AppLayout() {
           </div>
         </div>
       </main>
+      <CorgiSidebar />
     </div>
   );
 }

@@ -90,6 +90,16 @@ export function IconSpark({ className = 'h-[18px] w-[18px]' }: IconProps) {
   );
 }
 
+/** 聊天气泡（柯基发送按钮） */
+export function IconChat({ className = 'h-4 w-4' }: IconProps) {
+  return base(
+    className,
+    <>
+      <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.4 0-2.8-.3-4-.9L3 21l1.9-5.5c-.6-1.2-.9-2.6-.9-4A8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5z" />
+    </>
+  );
+}
+
 /** 编辑：铅笔 */
 export function IconPencil({ className = 'h-4 w-4' }: IconProps) {
   return base(
