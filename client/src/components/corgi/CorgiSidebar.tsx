@@ -241,7 +241,7 @@ function CorgiSettingsModal({ onClose }: { onClose: () => void }) {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error ?? `请求失败（${res.status}）`);
-      setTestResult({ ok: true, msg: `连接成功！柯基已就绪 🐕` });
+      setTestResult({ ok: true, msg: `连接成功！柯基回复：${String(data.content)}` });
     } catch (e) {
       setTestResult({ ok: false, msg: (e as Error).message });
     } finally {
