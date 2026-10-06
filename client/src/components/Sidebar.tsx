@@ -48,6 +48,17 @@ export default function Sidebar() {
 
   return (
     <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-black/[0.06] bg-[#f2f2f4] py-4 dark:border-white/[0.05] dark:bg-[#0a0a0c] md:w-56 md:items-stretch md:px-3">
+      {/* 品牌区 */}
+      <div className="mb-2 flex items-center justify-center gap-2 px-2 md:justify-start">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/15 text-base dark:bg-rose-500/20">
+          🐕
+        </span>
+        <span className="hidden flex-col items-start md:flex">
+          <span className="text-sm font-bold tracking-wide text-zinc-900 dark:text-zinc-50">旺达</span>
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Wangda 工作台</span>
+        </span>
+      </div>
+
       {/* 个人区 */}
       <button
         onClick={openEdit}

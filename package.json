@@ -2,7 +2,7 @@
   "name": "personal-work-dashboard",
   "version": "1.0.0",
   "private": true,
-  "description": "个人工作面板：任务待办 + 日程日历 + 数据统计",
+  "description": "旺达工作台：任务待办 + 日程日历 + 数据统计",
   "workspaces": [
     "client",
     "server",

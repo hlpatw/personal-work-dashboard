@@ -1,4 +1,4 @@
-# 🌸 个人工作面板 · Personal Work Dashboard
+# 🌸 旺达工作台 · Personal Work Dashboard
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-rose.svg)](./LICENSE)
 [![React 19](https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -58,7 +58,7 @@ npm run dist       # 一键：构建前端 → 编译后端 → 生成安装包
 
 产物在 `release\personal-work-dashboard-setup-x.y.z.exe`（版本号随 `desktop/package.json`），双击安装后：
 
-- 开始菜单/桌面启动「个人工作面板」，无需任何命令行和 Node 环境
+- 开始菜单/桌面启动「旺达工作台」，无需任何命令行和 Node 环境
 - 后端编译产物内置于程序中（进程内运行，零外部依赖）
 - 安装版使用独立内置 API（默认端口 `3210`），不会复用开发模式的 `3001` 端口
 - 数据存放于 `%APPDATA%\desktop\data\dashboard.db`，全新空白开始

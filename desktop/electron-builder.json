@@ -1,6 +1,6 @@
 {
   "appId": "com.personal.workdashboard",
-  "productName": "个人工作面板",
+  "productName": "旺达工作台",
   "directories": {
     "output": "../release"
   },

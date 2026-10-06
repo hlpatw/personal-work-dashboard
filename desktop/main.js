@@ -150,7 +150,7 @@ function createDashboardWindow() {
     height: 800,
     minWidth: 960,
     minHeight: 640,
-    title: '个人工作面板 · Made by Kexuan',
+    title: '旺达工作台 · Made by Kexuan',
     show: false,
     backgroundColor: '#1c1917',
     webPreferences: {
@@ -188,7 +188,7 @@ function petMenu() {
   Menu.buildFromTemplate([
     { label: '打开面板', click: () => toggleDashboard() },
     { type: 'separator' },
-    { label: '个人工作面板 · Made by Kexuan', enabled: false },
+    { label: '旺达工作台 · Made by Kexuan', enabled: false },
     {
       label: '退出',
       click: () => {
