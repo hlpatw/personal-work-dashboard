@@ -10,6 +10,7 @@
     { "from": "../client/dist", "to": "client-dist" }
   ],
   "win": {
+    "icon": "../build/icon.png",
     "target": [{ "target": "nsis", "arch": ["x64"] }]
   },
   "nsis": {
