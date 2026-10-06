@@ -141,12 +141,12 @@ export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   low: '低',
 };
 
-/** 分类展示：中性徽章（专业风） */
+/** 分类展示：四色徽章（轻量彩色化——只点缀徽章小面积，其余保持灰阶） */
 export const CATEGORY_META: Record<string, { chip: string }> = {
-  工作: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
-  学习: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
-  生活: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
-  其他: { chip: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300' },
+  工作: { chip: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400' },
+  学习: { chip: 'bg-sky-500/10 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400' },
+  生活: { chip: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' },
+  其他: { chip: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400' },
 };
 
 /** 优先级圆点颜色 */

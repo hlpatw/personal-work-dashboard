@@ -157,7 +157,8 @@ export default function CalendarPage() {
               {selectedList.map((s) => (
                 <li
                   key={s.id}
-                  className="group rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                  onClick={() => setDialog({ schedule: s })}
+                  className="group cursor-pointer rounded-lg border border-zinc-200 p-3 transition-colors hover:border-rose-300/60 hover:bg-rose-50/40 dark:border-zinc-800 dark:hover:border-rose-500/30 dark:hover:bg-rose-500/5"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -173,7 +174,10 @@ export default function CalendarPage() {
                       </p>
                       {s.notes && <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{s.notes}</p>}
                     </div>
-                    <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div
+                      className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={() => setDialog({ schedule: s })}
                         className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"

@@ -4,6 +4,7 @@ import Modal from './Modal';
 import ImageInput from './ImageInput';
 import { createTask, updateTask, fetchSubtasks } from '../api/tasks';
 import { fetchGoals } from '../api/goals';
+import { todayStr } from '../lib/date';
 import {
   TASK_CATEGORIES,
   TASK_PRIORITIES,
@@ -14,6 +15,9 @@ import {
   type TaskInput,
   type SubtaskInput,
 } from '../api/types';
+
+/** 常用标签快选（点击即加/再点即除，自定义标签仍走输入框） */
+const PRESET_TAGS = ['重要', '今日待办', '待定', '已延期', '需确认'];
 
 const inputCls =
   'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
@@ -35,7 +39,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
     category: task?.category ?? '工作',
     priority: task?.priority ?? 'medium',
     status: task?.status ?? 'todo',
-    due_date: task?.due_date ?? null,
+    due_date: task?.due_date ?? todayStr(),
     estimated_minutes: task?.estimated_minutes ?? null,
     goal_id: task?.goal_id ?? null,
     image_url: task?.image_url ?? null,
@@ -201,12 +205,43 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500">标签（逗号分隔，最多 8 个）</label>
+          <label className="mb-1 block text-xs font-medium text-zinc-500">标签（点击快选或输入自定义，最多 8 个）</label>
+          <div className="mb-1.5 flex flex-wrap gap-1.5">
+            {PRESET_TAGS.map((t) => {
+              const parts = tagDraft.split(/[,，\s]+/).filter(Boolean);
+              const active = parts.includes(t);
+              const full = parts.length >= 8 && !active;
+              return (
+                <button
+                  type="button"
+                  key={t}
+                  disabled={full}
+                  onClick={() => {
+                    if (active) {
+                      // 取消：从 tagDraft 中移除该词
+                      const next = parts.filter((p) => p !== t).join('，');
+                      setTagDraft(next);
+                    } else {
+                      const next = [...parts, t].join('，');
+                      setTagDraft(next);
+                    }
+                  }}
+                  className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
+                    active
+                      ? 'bg-rose-500 text-white'
+                      : 'text-zinc-500 ring-1 ring-inset ring-black/[0.08] hover:text-rose-500 hover:ring-rose-400/40 disabled:opacity-40 dark:text-zinc-400 dark:ring-white/[0.1] dark:hover:text-rose-400'
+                  }`}
+                >
+                  {t}
+                </button>
+              );
+            })}
+          </div>
           <input
             className={inputCls}
             value={tagDraft}
             onChange={(e) => setTagDraft(e.target.value)}
-            placeholder="如：重要，联调"
+            placeholder="自定义标签，逗号分隔"
           />
         </div>
 

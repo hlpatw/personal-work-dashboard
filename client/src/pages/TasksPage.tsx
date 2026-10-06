@@ -155,12 +155,14 @@ export default function TasksPage() {
               return (
                 <li
                   key={task.id}
-                  className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-zinc-100/80 dark:hover:bg-[#1f1f24]"
+                  onClick={() => setEditing(task)}
+                  className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-zinc-100/80 dark:hover:bg-[#1f1f24]"
                 >
                   <button
-                    onClick={() =>
-                      toggleMutation.mutate({ id: task.id, status: task.status === 'done' ? 'todo' : 'done' })
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMutation.mutate({ id: task.id, status: task.status === 'done' ? 'todo' : 'done' });
+                    }}
                     className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
                       task.status === 'done'
                         ? 'border-rose-500 bg-rose-500 text-white'
@@ -207,7 +209,10 @@ export default function TasksPage() {
                         <span
                           key={t}
                           className="cursor-pointer rounded px-1.5 py-px text-[11px] text-zinc-500 ring-1 ring-inset ring-black/[0.07] transition-colors hover:text-rose-500 hover:ring-rose-400/40 dark:text-zinc-400 dark:ring-white/[0.09] dark:hover:text-rose-400"
-                          onClick={() => setFilters((f) => ({ ...f, tag: t }))}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFilters((f) => ({ ...f, tag: t }));
+                          }}
                           title={`按标签「${t}」筛选`}
                         >
                           {t}
@@ -235,7 +240,10 @@ export default function TasksPage() {
                     </span>
                   )}
 
-                  <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div
+                    className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => setEditing(task)}
                       className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"

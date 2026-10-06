@@ -143,7 +143,10 @@ function GoalCard({
   const near = dl !== null && dl >= 0 && dl <= 7 && goal.status === 'active';
 
   return (
-    <div className="group rounded-xl bg-white p-4 ring-1 ring-black/[0.05] transition-shadow hover:shadow-md hover:shadow-black/[0.04] dark:bg-[#17171b] dark:ring-white/[0.045] dark:hover:shadow-black/30">
+    <div
+      onClick={onEdit}
+      className="group cursor-pointer rounded-xl bg-white p-4 ring-1 ring-black/[0.05] transition-shadow hover:shadow-md hover:shadow-black/[0.04] dark:bg-[#17171b] dark:ring-white/[0.045] dark:hover:shadow-black/30"
+    >
       <div className="mb-1 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className={`truncate text-sm font-medium ${goal.status === 'done' ? 'text-zinc-400 line-through' : ''}`}>
@@ -153,7 +156,10 @@ function GoalCard({
             <p className="mt-0.5 truncate text-xs text-zinc-400 dark:text-zinc-500">{goal.note}</p>
           )}
         </div>
-        <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div
+          className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             onClick={onEdit}
             className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
@@ -193,7 +199,10 @@ function GoalCard({
           src={goal.image_url}
           alt="目标配图"
           className="mt-2.5 max-h-44 w-full cursor-zoom-in rounded-lg object-cover ring-1 ring-black/[0.05] transition-opacity hover:opacity-90 dark:ring-white/[0.07]"
-          onClick={() => onViewImage(goal.image_url!)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewImage(goal.image_url!);
+          }}
         />
       )}
 
@@ -236,6 +245,7 @@ function GoalCard({
             <Link
               to={`/tasks?goal=${goal.id}`}
               className="text-rose-500 hover:underline dark:text-rose-400"
+              onClick={(e) => e.stopPropagation()}
             >
               查看任务 →
             </Link>
