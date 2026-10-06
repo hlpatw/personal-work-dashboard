@@ -104,7 +104,9 @@ export default function CalendarPage() {
                 <button
                   key={ds}
                   onClick={() => setSelected(ds)}
-                  className={`flex min-h-[72px] flex-col rounded-lg border p-1.5 text-left transition-colors ${
+                  onDoubleClick={() => setDialog({ schedule: null })}
+                  title="单击选中 · 双击新建日程"
+                  className={`flex min-h-[72px] min-w-0 flex-col overflow-hidden rounded-lg border p-1.5 text-left transition-colors ${
                     isSel
                       ? 'bg-rose-500/10 dark:bg-rose-500/15'
                       : 'border-transparent hover:border-zinc-200 hover:bg-zinc-50 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/60'
