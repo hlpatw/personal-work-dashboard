@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Electron](https://img.shields.io/badge/Electron-39-47848F?logo=electron&logoColor=white)](https://www.electronjs.org)
 [![SQLite](https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white)](https://nodejs.org/api/sqlite.html)
-[![Release](https://img.shields.io/badge/下载-v1.2.0-rose?logo=github)](../../releases)
+[![Release](https://img.shields.io/badge/下载-v1.3.0-rose?logo=github)](../../releases)
 
 > 🐕 一只住在桌面角落的像素柴犬：点亮它开面板，按住它拖到任意位置，平时点击穿透绝不挡你操作。
 >
@@ -67,7 +67,7 @@ npm run dist       # 一键：构建前端 → 编译后端 → 生成安装包
 其他命令：
 
 ```powershell
-npm test           # 后端 API 测试（34 个用例）
+npm test           # 后端 API 测试（37 个用例）
 npm run seed       # 写入示例数据（任务/日程/目标/灵感全覆盖）
 npm run reset      # 清空全部数据，从零开始录入自己的内容
 npm run build      # 前端类型检查 + 生产构建
@@ -81,11 +81,12 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 | 概览 `/` | 今日统计卡片（待办/进行中/完成/完成率/日程数）、进行中的目标进度、此刻灵感快捷记录区、今日+逾期任务勾选、今日日程时间线 |
 | 任务 `/tasks` | 新建/编辑/删除任务，状态流转，分类/优先级/截止日期/预计时长/标签/子任务清单/关联目标/贴图，多维筛选，逾期红色标识 |
 | 日历 `/calendar` | 月历视图（周一为首日）、日程色条、选中日详情面板、全天/定时日程、翻月与回今天 |
-| 此刻灵感 `/inspirations` | 灵感迸发的随手记录：常驻输入框回车即记、时间流卡片（类型徽章+相对时间）、全文搜索、一键转任务、贴图 |
-| 目标 `/goals` | 长期目标：任务关联与进度聚合、剩余天数（临期/逾期变色）、状态流转、贴图 |
+| 此刻灵感 `/inspirations` | 灵感迸发的随手记录：常驻输入框回车即记、时间流卡片（类型徽章+相对时间）、全文搜索、一键转任务、贴图、卡片原地编辑 |
+| 目标 `/goals` | 长期目标：任务关联与进度聚合、剩余天数（临期/逾期变色）、状态流转、分类、贴图、编辑 |
 | 统计 `/stats` | 总完成率/本周完成/逾期/总数/完成目标卡片、近 12 周完成数柱状图、分类分布环形图、分类明细表 |
 
 - **贴图**：任务、目标和灵感均支持选图或 `Ctrl+V` 粘贴截图，自动压缩并可点击全屏查看
+- **🐕 柯基 AI 助手**：右侧可折叠聊天侧栏，配置任意 OpenAI 兼容接口（地址/模型/Key 仅存本地浏览器）；柯基人格可自定义，回复支持 Markdown 渲染，聊天历史本地保留
 - **主题**：侧栏底部按钮切换深/浅色（默认专业暗色），选择持久化，刷新不闪烁
 - **桌面宠物**：像素柴犬常驻右下角；平时点击穿透不挡其他窗口，悬停激活（发光提示）后可点击开面板/拖动/右键菜单
 - **数据**：存储于 `server/data/dashboard.db`（SQLite，WAL 模式），重启不丢失；安装包版存于 `%APPDATA%\desktop\data\dashboard.db`
