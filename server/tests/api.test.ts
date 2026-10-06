@@ -219,6 +219,32 @@ describe('长期目标', () => {
     expect(t.body.goal_id).toBeNull();
   });
 
+  it('目标分类：默认其他、可指定、可修改、非法值 400', async () => {
+    const plain = await request(app).post('/api/goals').send({ title: '默认分类目标' });
+    expect(plain.body.category).toBe('其他');
+
+    const withCat = await request(app).post('/api/goals').send({ title: '学习目标', category: '学习' });
+    expect(withCat.body.category).toBe('学习');
+
+    const changed = await request(app)
+      .put(`/api/goals/${withCat.body.id}`)
+      .send({ title: '学习目标', category: '工作' });
+    expect(changed.body.category).toBe('工作');
+
+    expect((await request(app).post('/api/goals').send({ title: 'x', category: '摸鱼' })).status).toBe(400);
+  });
+
+  it('目标可编辑（PUT 全量替换）', async () => {
+    const created = await request(app).post('/api/goals').send({ title: '旧标题', note: '旧备注' });
+    const edited = await request(app)
+      .put(`/api/goals/${created.body.id}`)
+      .send({ title: '新标题', note: '新备注', category: '学习' });
+    expect(edited.status).toBe(200);
+    expect(edited.body.title).toBe('新标题');
+    expect(edited.body.note).toBe('新备注');
+    expect(edited.body.category).toBe('学习');
+  });
+
   it('目标标题为空返回 400', async () => {
     const res = await request(app).post('/api/goals').send({ title: ' ' });
     expect(res.status).toBe(400);
@@ -262,6 +288,22 @@ describe('此刻灵感', () => {
     const list = await request(app).get('/api/inspirations');
     expect(list.body[0].content).toBe('第二条');
     expect(list.body[1].content).toBe('第一条');
+  });
+
+  it('灵感可编辑（PUT 全量替换）', async () => {
+    const created = await request(app)
+      .post('/api/inspirations')
+      .send({ content: '原始内容', category: '生活' });
+    const edited = await request(app)
+      .put(`/api/inspirations/${created.body.id}`)
+      .send({ content: '改后的内容', category: '工作', image_url: null });
+    expect(edited.status).toBe(200);
+    expect(edited.body.content).toBe('改后的内容');
+    expect(edited.body.category).toBe('工作');
+    expect(edited.body.updated_at).toBeTruthy();
+
+    expect((await request(app).put('/api/inspirations/999').send({ content: 'x' })).status).toBe(404);
+    expect((await request(app).put(`/api/inspirations/${created.body.id}`).send({ content: ' ' })).status).toBe(400);
   });
 
   it('删除 204 与不存在 404', async () => {

@@ -49,6 +49,7 @@ export interface Goal {
   id: number;
   title: string;
   note: string;
+  category: TaskCategory;
   target_date: string | null;
   status: GoalStatus;
   image_url: string | null;
@@ -58,7 +59,7 @@ export interface Goal {
   updated_at: string;
 }
 
-export type GoalInput = Pick<Goal, 'title' | 'note' | 'target_date' | 'status' | 'image_url'>;
+export type GoalInput = Pick<Goal, 'title' | 'note' | 'category' | 'target_date' | 'status' | 'image_url'>;
 
 export const GOAL_STATUS_LABELS: Record<GoalStatus, string> = {
   active: '进行中',
@@ -89,6 +90,7 @@ export interface Inspiration {
   category: InspirationCategory;
   image_url: string | null;
   created_at: string;
+  updated_at: string | null;
 }
 
 export type InspirationInput = Pick<Inspiration, 'content' | 'category' | 'image_url'>;

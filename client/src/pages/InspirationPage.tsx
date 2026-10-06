@@ -1,11 +1,12 @@
 import { useState, type KeyboardEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchInspirations, createInspiration, deleteInspiration } from '../api/inspirations';
+import { fetchInspirations, createInspiration, updateInspiration, deleteInspiration } from '../api/inspirations';
 import {
   INSPIRATION_CATEGORIES,
   INSPIRATION_CATEGORY_META,
   type Inspiration,
   type InspirationCategory,
+  type InspirationInput,
 } from '../api/types';
 import { relativeTime } from '../lib/date';
 import PageHeader from '../components/PageHeader';
@@ -14,7 +15,7 @@ import Card from '../components/Card';
 import TaskFormDialog from '../components/TaskFormDialog';
 import ImageInput from '../components/ImageInput';
 import Lightbox from '../components/Lightbox';
-import { IconTrash } from '../components/icons';
+import { IconPencil, IconTrash } from '../components/icons';
 
 const selectCls =
   'rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-200 dark:hover:bg-[#26262b]';
@@ -168,11 +169,95 @@ function InspirationCard({
   onConvert: () => void;
   onViewImage: (src: string) => void;
 }) {
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(item.content);
+  const [draftImage, setDraftImage] = useState<string | null>(item.image_url);
+  const [draftCategory, setDraftCategory] = useState<InspirationCategory>(item.category);
+
+  const updateMutation = useMutation({
+    mutationFn: (input: InspirationInput) => updateInspiration(item.id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inspirations'] });
+      setEditing(false);
+    },
+  });
+
+  const startEdit = () => {
+    setDraft(item.content);
+    setDraftImage(item.image_url);
+    setDraftCategory(item.category);
+    setEditing(true);
+  };
+
+  const save = () => {
+    const content = draft.trim();
+    if (!content && !draftImage) return;
+    updateMutation.mutate({
+      content: content || '（图片）',
+      category: draftCategory,
+      image_url: draftImage,
+    });
+  };
+
+  if (editing) {
+    return (
+      <Card className="p-4 ring-1 ring-rose-500/30">
+        <div className="space-y-2.5">
+          <ImageInput value={draftImage} onChange={setDraftImage} />
+          <textarea
+            className="w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
+            value={draft}
+            maxLength={500}
+            rows={3}
+            onChange={(e) => setDraft(e.target.value)}
+            autoFocus
+          />
+          <div className="flex items-center justify-between gap-2">
+            <select
+              className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 outline-none dark:bg-[#1f1f24] dark:text-zinc-200"
+              value={draftCategory}
+              onChange={(e) => setDraftCategory(e.target.value as InspirationCategory)}
+            >
+              {INSPIRATION_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditing(false)}
+                className="rounded-lg px-3 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+              >
+                取消
+              </button>
+              <button
+                onClick={save}
+                disabled={(!draft.trim() && !draftImage) || updateMutation.isPending}
+                className="rounded-lg bg-rose-500 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-rose-400 disabled:opacity-50"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="group p-4 transition-all group-hover:shadow-lg group-hover:shadow-black/[0.06] dark:group-hover:shadow-black/40">
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 flex-1 whitespace-pre-wrap break-words text-sm leading-relaxed">{item.content}</p>
         <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <button
+            onClick={startEdit}
+            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+            title="编辑"
+          >
+            <IconPencil />
+          </button>
           <button
             onClick={onConvert}
             className="rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400"
@@ -202,6 +287,11 @@ function InspirationCard({
           {item.category}
         </span>
         <span className="text-zinc-400 dark:text-zinc-500">{relativeTime(item.created_at)}</span>
+        {item.updated_at && (
+          <span className="text-zinc-400/70 dark:text-zinc-600" title={`编辑于 ${item.updated_at}`}>
+            · 已编辑
+          </span>
+        )}
       </div>
     </Card>
   );

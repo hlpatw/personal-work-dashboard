@@ -36,6 +36,7 @@ export function initDb(path: string): Db {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       title       TEXT    NOT NULL CHECK(length(trim(title)) > 0),
       note        TEXT    NOT NULL DEFAULT '',
+      category    TEXT    NOT NULL DEFAULT '其他',
       target_date TEXT,
       status      TEXT    NOT NULL DEFAULT 'active' CHECK(status IN ('active','done','archived')),
       image_url   TEXT,
@@ -70,7 +71,7 @@ export function initDb(path: string): Db {
     CREATE INDEX IF NOT EXISTS idx_tasks_due      ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category);
 
-    -- 此刻灵感：灵感迸发的随手记录（时间流，不可编辑，记错就删）
+    -- 此刻灵感：灵感迸发的随手记录（时间流，支持原地编辑）
     CREATE TABLE IF NOT EXISTS inspirations (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       content    TEXT    NOT NULL CHECK(length(trim(content)) > 0),
@@ -78,7 +79,8 @@ export function initDb(path: string): Db {
                  CHECK(category IN ('灵感','工作','生活','心情')),
       image_url  TEXT,
       user_id    INTEGER NOT NULL DEFAULT 1 REFERENCES users(id),
-      created_at TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
+      created_at TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
+      updated_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_inspirations_user ON inspirations(user_id);
 
@@ -121,6 +123,9 @@ export function initDb(path: string): Db {
   migrateAddColumn(db, 'inspirations', 'image_url', 'TEXT');
   migrateAddColumn(db, 'goals', 'image_url', 'TEXT');
   migrateAddColumn(db, 'tasks', 'image_url', 'TEXT');
+  // 灵感编辑时间 / 目标分类
+  migrateAddColumn(db, 'inspirations', 'updated_at', 'TEXT');
+  migrateAddColumn(db, 'goals', 'category', "TEXT NOT NULL DEFAULT '其他'");
 
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_user     ON tasks(user_id);

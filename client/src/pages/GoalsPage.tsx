@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import { fetchGoals, createGoal, updateGoalStatus, deleteGoal } from '../api/goals';
-import { GOAL_STATUS_LABELS, type Goal, type GoalInput, type GoalStatus } from '../api/types';
+import { fetchGoals, createGoal, updateGoal, updateGoalStatus, deleteGoal } from '../api/goals';
+import {
+  GOAL_STATUS_LABELS,
+  TASK_CATEGORIES,
+  CATEGORY_META,
+  type Goal,
+  type GoalInput,
+  type GoalStatus,
+} from '../api/types';
 import { todayStr, formatCN, toDateStr, addDaysStr } from '../lib/date';
 import { useCountUp } from '../lib/useCountUp';
 import PageHeader from '../components/PageHeader';
@@ -11,7 +18,7 @@ import Modal from '../components/Modal';
 import Card from '../components/Card';
 import ImageInput from '../components/ImageInput';
 import Lightbox from '../components/Lightbox';
-import { IconTrash } from '../components/icons';
+import { IconPencil, IconTrash } from '../components/icons';
 
 const inputCls =
   'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
@@ -27,7 +34,8 @@ function daysLeft(target: string | null): number | null {
 export default function GoalsPage() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<GoalStatus | ''>('');
-  const [creating, setCreating] = useState(false);
+  // undefined=弹窗关闭；null=新建；Goal=编辑该目标
+  const [dialogGoal, setDialogGoal] = useState<Goal | null | undefined>(undefined);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const { data: goals, isLoading, isError, error } = useQuery({
@@ -71,7 +79,7 @@ export default function GoalsPage() {
               <option value="archived">已归档</option>
             </select>
             <button
-              onClick={() => setCreating(true)}
+              onClick={() => setDialogGoal(null)}
               className="rounded-lg bg-rose-500 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
             >
               ＋ 新建目标
@@ -95,6 +103,7 @@ export default function GoalsPage() {
               key={g.id}
               goal={g}
               onStatus={(status) => statusMutation.mutate({ id: g.id, status })}
+              onEdit={() => setDialogGoal(g)}
               onDelete={() => {
                 if (window.confirm(`确定删除目标「${g.title}」吗？关联任务会自动解除关联。`)) {
                   deleteMutation.mutate(g.id);
@@ -106,7 +115,9 @@ export default function GoalsPage() {
         </div>
       )}
 
-      {creating && <GoalFormDialog onClose={() => setCreating(false)} />}
+      {dialogGoal !== undefined && (
+        <GoalFormDialog goal={dialogGoal} onClose={() => setDialogGoal(undefined)} />
+      )}
       {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
@@ -115,11 +126,13 @@ export default function GoalsPage() {
 function GoalCard({
   goal,
   onStatus,
+  onEdit,
   onDelete,
   onViewImage,
 }: {
   goal: Goal;
   onStatus: (s: GoalStatus) => void;
+  onEdit: () => void;
   onDelete: () => void;
   onViewImage: (src: string) => void;
 }) {
@@ -141,6 +154,13 @@ function GoalCard({
           )}
         </div>
         <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <button
+            onClick={onEdit}
+            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+            title="编辑"
+          >
+            <IconPencil />
+          </button>
           {goal.status === 'active' ? (
             <button
               onClick={() => onStatus('done')}
@@ -191,9 +211,12 @@ function GoalCard({
       </div>
 
       <div className="mt-2.5 flex items-center justify-between text-xs">
-        <span className="text-zinc-400 dark:text-zinc-500">
+        <span className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500">
+          <span className={`rounded-md px-1.5 py-0.5 ${CATEGORY_META[goal.category]?.chip}`}>
+            {goal.category}
+          </span>
           {GOAL_STATUS_LABELS[goal.status]}
-          {goal.target_date && <span className="ml-2">目标 {formatCN(goal.target_date, 'yyyy年M月d日')}</span>}
+          {goal.target_date && <span className="ml-1">目标 {formatCN(goal.target_date, 'yyyy年M月d日')}</span>}
         </span>
         <span className="flex items-center gap-2">
           {dl !== null && goal.status === 'active' && (
@@ -223,21 +246,23 @@ function GoalCard({
   );
 }
 
-function GoalFormDialog({ onClose }: { onClose: () => void }) {
+function GoalFormDialog({ goal, onClose }: { goal: Goal | null; onClose: () => void }) {
   const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [form, setForm] = useState<GoalInput>({
-    title: '',
-    note: '',
-    target_date: addDaysStr(toDateStr(new Date()), 90),
-    status: 'active',
-    image_url: null,
+    title: goal?.title ?? '',
+    note: goal?.note ?? '',
+    category: goal?.category ?? '其他',
+    target_date: goal?.target_date ?? addDaysStr(toDateStr(new Date()), 90),
+    status: goal?.status ?? 'active',
+    image_url: goal?.image_url ?? null,
   });
 
   const mutation = useMutation({
-    mutationFn: (input: GoalInput) => createGoal(input),
+    mutationFn: (input: GoalInput) => (goal ? updateGoal(goal.id, input) : createGoal(input)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       onClose();
     },
     onError: (e: Error) => setError(e.message),
@@ -254,7 +279,7 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Modal title="新建目标" onClose={onClose}>
+    <Modal title={goal ? '编辑目标' : '新建目标'} onClose={onClose}>
       <form onSubmit={submit} className="space-y-2.5">
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500">目标 *</label>
@@ -267,6 +292,34 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
             placeholder="如：Q4 学完 React 基础"
           />
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-500">分类</label>
+            <select
+              className={inputCls}
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value as GoalInput['category'] })}
+            >
+              {TASK_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-500">目标日期</label>
+            <input
+              type="date"
+              className={inputCls}
+              value={form.target_date ?? ''}
+              onChange={(e) => setForm({ ...form, target_date: e.target.value || null })}
+            />
+          </div>
+        </div>
+        {!goal && (
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500">默认 90 天后，可在任务里关联到该目标</p>
+        )}
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500">备注</label>
           <input
@@ -275,16 +328,6 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
             onChange={(e) => setForm({ ...form, note: e.target.value })}
             placeholder="可选"
           />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500">目标日期</label>
-          <input
-            type="date"
-            className={inputCls}
-            value={form.target_date ?? ''}
-            onChange={(e) => setForm({ ...form, target_date: e.target.value || null })}
-          />
-          <p className="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">默认 90 天后，可在任务里关联到该目标</p>
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-500">配图（可选，可粘贴截图）</label>
@@ -304,7 +347,7 @@ function GoalFormDialog({ onClose }: { onClose: () => void }) {
             disabled={mutation.isPending}
             className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
           >
-            {mutation.isPending ? '保存中…' : '创建目标'}
+            {mutation.isPending ? '保存中…' : goal ? '保存' : '创建目标'}
           </button>
         </div>
       </form>

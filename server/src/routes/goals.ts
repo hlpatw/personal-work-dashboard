@@ -1,11 +1,12 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { rows, row, run, type Db } from '../db.js';
-import { type Goal, type GoalStatus } from '../types.js';
+import { TASK_CATEGORIES, type Goal, type GoalStatus } from '../types.js';
 
 const goalSchema = z.object({
   title: z.string().trim().min(1, '标题不能为空').max(200),
   note: z.string().trim().optional().default(''),
+  category: z.enum(TASK_CATEGORIES).optional().default('其他'),
   target_date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, '目标日期格式应为 YYYY-MM-DD')
@@ -60,9 +61,10 @@ export default function goalRoutes(db: Db): Router {
     const input = goalSchema.parse(req.body);
     const result = run(
       db,
-      `INSERT INTO goals (title, note, target_date, status, image_url, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO goals (title, note, category, target_date, status, image_url, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       input.title,
       input.note,
+      input.category,
       input.target_date,
       input.status,
       input.image_url,
@@ -81,10 +83,11 @@ export default function goalRoutes(db: Db): Router {
     const input = goalSchema.parse(req.body);
     run(
       db,
-      `UPDATE goals SET title = ?, note = ?, target_date = ?, status = ?, image_url = ?, updated_at = datetime('now','localtime')
+      `UPDATE goals SET title = ?, note = ?, category = ?, target_date = ?, status = ?, image_url = ?, updated_at = datetime('now','localtime')
        WHERE id = ? AND user_id = ?`,
       input.title,
       input.note,
+      input.category,
       input.target_date,
       input.status,
       input.image_url,

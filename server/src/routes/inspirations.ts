@@ -61,6 +61,41 @@ export default function inspirationRoutes(db: Db): Router {
     res.status(201).json(created);
   });
 
+  // 编辑（全量替换：content/category/image_url）
+  router.put('/:id', (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    const exists = row<Inspiration>(
+      db,
+      'SELECT * FROM inspirations WHERE id = ? AND user_id = ?',
+      id,
+      req.userId!
+    );
+    if (!exists) {
+      res.status(404).json({ error: '灵感不存在' });
+      return;
+    }
+    const input = inspirationSchema.parse(req.body);
+    run(
+      db,
+      `UPDATE inspirations SET content = ?, category = ?, image_url = ?,
+        updated_at = datetime('now','localtime')
+       WHERE id = ? AND user_id = ?`,
+      input.content,
+      input.category,
+      input.image_url,
+      id,
+      req.userId!
+    );
+    res.json(
+      row<Inspiration>(
+        db,
+        'SELECT * FROM inspirations WHERE id = ? AND user_id = ?',
+        id,
+        req.userId!
+      )
+    );
+  });
+
   // 删除
   router.delete('/:id', (req: Request, res: Response) => {
     const result = run(
