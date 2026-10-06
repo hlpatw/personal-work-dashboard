@@ -1,11 +1,11 @@
-# 🌸 旺达工作台 · Personal Work Dashboard
+# 🌸 旺达工作台 · Wangda Workbench
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-rose.svg)](./LICENSE)
 [![React 19](https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Electron](https://img.shields.io/badge/Electron-39-47848F?logo=electron&logoColor=white)](https://www.electronjs.org)
 [![SQLite](https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white)](https://nodejs.org/api/sqlite.html)
-[![Release](https://img.shields.io/badge/下载-v1.3.1-rose?logo=github)](../../releases)
+[![Release](https://img.shields.io/badge/下载-v1.3.2-rose?logo=github)](../../releases)
 
 > 🐕 一只住在桌面角落的像素柴犬：点亮它开面板，按住它拖到任意位置，平时点击穿透绝不挡你操作。
 >
@@ -56,7 +56,7 @@ npm run desktop    # 启动桌面小宠物（首次需已 npm install，会下�
 npm run dist       # 一键：构建前端 → 编译后端 → 生成安装包
 ```
 
-产物在 `release\personal-work-dashboard-setup-x.y.z.exe`（版本号随 `desktop/package.json`），双击安装后：
+产物在 `release\wangda-setup-x.y.z.exe`（版本号随 `desktop/package.json`），双击安装后：
 
 - 开始菜单/桌面启动「旺达工作台」，无需任何命令行和 Node 环境
 - 后端编译产物内置于程序中（进程内运行，零外部依赖）

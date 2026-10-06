@@ -16,6 +16,6 @@
     "oneClick": true,
     "perMachine": false,
     "deleteAppDataOnUninstall": false,
-    "artifactName": "personal-work-dashboard-setup-${version}.exe"
+    "artifactName": "wangda-setup-${version}.exe"
   }
 }
