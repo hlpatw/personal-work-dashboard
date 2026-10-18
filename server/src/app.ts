@@ -1,5 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
-import { ZodError, z } from 'zod';
+import { ZodError } from 'zod';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,9 +9,13 @@ import scheduleRoutes from './routes/schedules.js';
 import statsRoutes from './routes/stats.js';
 import goalRoutes from './routes/goals.js';
 import inspirationRoutes from './routes/inspirations.js';
+import aiRoutes, { type AiTimeouts } from './routes/ai.js';
 
-/** 构造 Express 应用；dbPath 传 ':memory:' 用于测试 */
-export function createApp(dbPath: string, opts?: { staticDir?: string }) {
+/** 构造 Express 应用；dbPath 传 ':memory:' 用于测试；aiTimeouts 供测试注入短超时 */
+export function createApp(
+  dbPath: string,
+  opts?: { staticDir?: string; aiTimeouts?: Partial<AiTimeouts> }
+) {
   const db = initDb(dbPath);
   const app = express();
   // 默认 100KB 不够装 Base64 贴图（压缩后约 300~400KB），放宽到 3MB
@@ -31,71 +35,8 @@ export function createApp(dbPath: string, opts?: { staticDir?: string }) {
     res.json({ ok: true, time: new Date().toISOString() });
   });
 
-  // —— 柯基 AI 助手：OpenAI 兼容接口转发（绕开浏览器 CORS；Key 由前端随请求传入，
-  //    不落库不记录，后端零感知用户凭据）
-  const aiChatSchema = z.object({
-    baseUrl: z
-      .string()
-      .trim()
-      .regex(/^https?:\/\//, '接口地址应以 http:// 或 https:// 开头'),
-    apiKey: z.string().trim().min(1, 'API Key 不能为空').max(500),
-    model: z.string().trim().min(1, '模型名不能为空').max(200),
-    messages: z
-      .array(
-        z.object({
-          role: z.enum(['system', 'user', 'assistant']),
-          content: z.string().max(8000, '单条消息过长'),
-        })
-      )
-      .min(1, '消息不能为空')
-      .max(40, '对话历史过长，请开启新对话'),
-  });
-
-  app.post('/api/ai/chat', async (req: Request, res: Response) => {
-    const input = aiChatSchema.parse(req.body);
-    const url = input.baseUrl.replace(/\/+$/, '') + '/chat/completions';
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 30_000);
-    try {
-      const upstream = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${input.apiKey}`,
-        },
-        body: JSON.stringify({ model: input.model, messages: input.messages }),
-        signal: controller.signal,
-      });
-      if (!upstream.ok) {
-        const detail = await upstream.text().catch(() => '');
-        const brief =
-          upstream.status === 401
-            ? 'API Key 无效或未授权'
-            : upstream.status === 429
-              ? '调用频率超限或余额不足'
-              : `上游接口返回 ${upstream.status}`;
-        res.status(502).json({ error: `${brief}${detail ? `：${detail.slice(0, 200)}` : ''}` });
-        return;
-      }
-      const data = (await upstream.json()) as {
-        choices?: { message?: { content?: string } }[];
-      };
-      const content = data.choices?.[0]?.message?.content;
-      if (typeof content !== 'string') {
-        res.status(502).json({ error: '上游返回格式异常（缺少回复内容）' });
-        return;
-      }
-      res.json({ content });
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') {
-        res.status(504).json({ error: '请求超时（30 秒），请检查接口地址或稍后重试' });
-      } else {
-        res.status(502).json({ error: `无法连接接口：${(err as Error).message}` });
-      }
-    } finally {
-      clearTimeout(timer);
-    }
-  });
+  // —— 柯基 AI 助手：OpenAI 兼容接口转发（含流式 SSE），详见 routes/ai.ts ——
+  app.use('/api/ai', aiRoutes(opts?.aiTimeouts));
 
   app.use('/api/tasks', taskRoutes(db));
   app.use('/api/schedules', scheduleRoutes(db));

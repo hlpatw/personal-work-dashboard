@@ -13,6 +13,8 @@ export interface AiConfigState {
   apiKey: string;
   model: string;
   systemPrompt: string;
+  /** 发送时向柯基附带今日任务与日程快照（默认开；persist 浅合并，旧数据自动取默认值） */
+  todayContext: boolean;
   setConfig: (c: Partial<Omit<AiConfigState, 'setConfig'>>) => void;
 }
 
@@ -23,6 +25,7 @@ export const useAiConfigStore = create<AiConfigState>()(
       apiKey: '',
       model: '',
       systemPrompt: CORGI_DEFAULT_PROMPT,
+      todayContext: true,
       setConfig: (c) => set(c),
     }),
     { name: 'dashboard-ai-config' }

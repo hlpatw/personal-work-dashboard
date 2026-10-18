@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { marked } from 'marked';
 import { useAiConfigStore } from '../../stores/aiConfig';
 import { useCorgiChatStore } from '../../stores/corgiChat';
+import { chat } from '../../api/ai';
+import { QUICK_PROMPT_TODAY } from '../../lib/corgiContext';
 import Modal from '../Modal';
 import { IconChat } from '../icons';
 
@@ -21,53 +23,37 @@ const inputCls =
   'w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100';
 
 export default function CorgiSidebar() {
-  const { messages, open, addMessage, clearChat, setOpen } = useCorgiChatStore();
-  const { baseUrl, apiKey, model, systemPrompt } = useAiConfigStore();
+  const { messages, open, streamingText, sending, error, clearChat, setOpen, send } = useCorgiChatStore();
+  const { baseUrl, apiKey, model, todayContext, setConfig } = useAiConfigStore();
   const [draft, setDraft] = useState('');
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const configured = Boolean(baseUrl && apiKey && model);
 
-  // 新消息自动滚到底
+  // 新消息 / 流式增量 → 自动滚到底
+  const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [messages.length, sending]);
+  }, [messages.length, sending, streamingText]);
 
-  const send = async () => {
-    const content = draft.trim();
+  const doSend = (text?: string) => {
+    const content = (text ?? draft).trim();
     if (!content || sending) return;
-    setError('');
     setDraft('');
-    addMessage({ role: 'user', content });
-    setSending(true);
-    try {
-      const history = [
-        { role: 'system' as const, content: systemPrompt || '你是柯基，温暖的陪伴助手。' },
-        ...useCorgiChatStore.getState().messages,
-      ];
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ baseUrl, apiKey, model, messages: history }),
-      });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error ?? `请求失败（${res.status}）`);
-      addMessage({ role: 'assistant', content: data.content });
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSending(false);
-    }
+    void send(content);
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      void send();
+      doSend();
     }
+  };
+
+  const fillQuickPrompt = () => {
+    setDraft(QUICK_PROMPT_TODAY);
+    textareaRef.current?.focus();
   };
 
   // 收起态：贴右缘的窄竖条把手
@@ -144,6 +130,13 @@ export default function CorgiSidebar() {
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
               想聊点什么？工作烦恼、新点子，或者随便唠唠都行
             </p>
+            <button
+              onClick={fillQuickPrompt}
+              className="mt-3 rounded-lg bg-black/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-black/[0.07] dark:bg-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.09]"
+              title="把快捷指令填入输入框（可修改后再发送）"
+            >
+              🗓 帮我安排今天
+            </button>
           </div>
         ) : (
           messages.map((m, i) =>
@@ -164,7 +157,17 @@ export default function CorgiSidebar() {
             )
           )
         )}
-        {sending && (
+        {/* 流式中的临时气泡（全文增量重渲） */}
+        {sending && streamingText && (
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 shrink-0 text-base">🐕</span>
+            <div
+              className="corgi-md max-w-[85%] rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm dark:border-white/[0.06] dark:bg-white/[0.06]"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(streamingText) }}
+            />
+          </div>
+        )}
+        {sending && !streamingText && (
           <div className="flex items-start gap-2">
             <span className="mt-0.5 shrink-0 text-base">🐕</span>
             <div className="rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm text-zinc-400 dark:border-white/[0.06] dark:bg-white/[0.06]">
@@ -179,8 +182,23 @@ export default function CorgiSidebar() {
 
       {/* 输入区 */}
       <div className="shrink-0 border-t border-black/[0.06] p-3 dark:border-white/[0.05]">
+        {/* 今日安排开关：发送时附带今日任务/日程快照 */}
+        <div className="mb-2 flex items-center justify-between">
+          <button
+            onClick={() => setConfig({ todayContext: !todayContext })}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              todayContext
+                ? 'bg-rose-500/[0.16] text-rose-600 dark:text-rose-400'
+                : 'bg-zinc-500/15 text-zinc-400 dark:text-zinc-500'
+            }`}
+            title={todayContext ? '已开启：发送时向柯基附带今日任务与日程摘要' : '已关闭：不附带今日数据'}
+          >
+            🗓 今日安排 {todayContext ? '· 开' : '· 关'}
+          </button>
+        </div>
         <div className="flex items-end gap-2">
           <textarea
+            ref={textareaRef}
             className="max-h-28 min-h-[40px] flex-1 resize-none rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100"
             placeholder={configured ? '和柯基聊聊…（Enter 发送）' : '请先在设置中配置 AI 接口'}
             rows={1}
@@ -194,7 +212,7 @@ export default function CorgiSidebar() {
             onKeyDown={onKeyDown}
           />
           <button
-            onClick={() => void send()}
+            onClick={() => doSend()}
             disabled={!draft.trim() || sending || !configured}
             className="shrink-0 rounded-lg bg-rose-500 px-3 py-2 text-rose-fg transition-colors hover:bg-rose-400 disabled:opacity-50"
             aria-label="发送"
@@ -226,22 +244,16 @@ function CorgiSettingsModal({ onClose }: { onClose: () => void }) {
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          baseUrl: draft.baseUrl,
-          apiKey: draft.apiKey,
-          model: draft.model,
-          messages: [
-            { role: 'system', content: '你是柯基。' },
-            { role: 'user', content: '你好' },
-          ],
-        }),
+      const { content } = await chat({
+        baseUrl: draft.baseUrl,
+        apiKey: draft.apiKey,
+        model: draft.model,
+        messages: [
+          { role: 'system', content: '你是柯基。' },
+          { role: 'user', content: '你好' },
+        ],
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error ?? `请求失败（${res.status}）`);
-      setTestResult({ ok: true, msg: `连接成功！柯基回复：${String(data.content)}` });
+      setTestResult({ ok: true, msg: `连接成功！柯基回复：${content}` });
     } catch (e) {
       setTestResult({ ok: false, msg: (e as Error).message });
     } finally {
