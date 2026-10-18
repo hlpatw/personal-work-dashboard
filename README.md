@@ -67,7 +67,7 @@ npm run dist       # 一键：构建前端 → 编译后端 → 生成安装包
 其他命令：
 
 ```powershell
-npm test           # 后端 API 测试（37 个用例）
+npm test           # 后端 API 测试（45 个用例）
 npm run seed       # 写入示例数据（任务/日程/目标/灵感全覆盖）
 npm run reset      # 清空全部数据，从零开始录入自己的内容
 npm run build      # 前端类型检查 + 生产构建
@@ -121,6 +121,12 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 | GET | `/api/stats/summary` | 今日概览 + 逾期数 |
 | GET | `/api/stats/completions/daily?days=90` | 每日完成数 |
 | GET | `/api/stats/categories` | 分类统计 |
+| GET/POST | `/api/goals` | 目标列表（含进度聚合）/ 新建 |
+| GET/PUT/DELETE | `/api/goals/:id` | 目标详情 / 更新 / 删除 |
+| PATCH | `/api/goals/:id/status` | 目标状态流转 |
+| GET/POST | `/api/inspirations` | 灵感列表（q/category 筛选）/ 新建 |
+| GET/PUT/DELETE | `/api/inspirations/:id` | 灵感详情 / 原地编辑 / 删除 |
+| POST | `/api/ai/chat` | 柯基 AI 转发（OpenAI 兼容，`stream:true` 走 SSE 流式） |
 
 ## 多人使用与未来扩展
 
