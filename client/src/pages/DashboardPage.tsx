@@ -65,7 +65,7 @@ export default function DashboardPage() {
     },
     {
       label: '进行中',
-      valueColor: 'text-rose-500 dark:text-rose-400',
+      valueColor: 'text-rose-600 dark:text-rose-400',
       value: summary?.today.in_progress ?? 0,
       hint: '正在处理的任务',
       to: '/tasks?status=in_progress',
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                 <li key={s.id} className="relative">
                   <span className="absolute -left-[13px] top-1.5 h-2 w-2 rounded-full bg-rose-500" />
                   <div className="flex items-baseline gap-2">
-                    <span className="shrink-0 text-xs font-medium text-rose-600 dark:text-rose-400">
+                    <span className="shrink-0 text-xs font-medium tabular-nums text-rose-600 dark:text-rose-400">
                       {s.start_time ?? '全天'}
                     </span>
                     <div className="min-w-0">
@@ -261,7 +261,7 @@ function StatCard({
           <div className="min-w-0">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
             <p
-              className={`mt-1 font-semibold tracking-tight ${featured ? 'text-3xl' : 'text-2xl'} ${
+              className={`mt-1 font-semibold tracking-tight tabular-nums ${featured ? 'text-3xl' : 'text-2xl'} ${
                 valueColor || 'text-zinc-900 dark:text-zinc-50'
               }`}
             >
@@ -289,12 +289,12 @@ function GoalMini({ goal }: { goal: Goal }) {
   return (
     <Link
       to={`/tasks?goal=${goal.id}`}
-      className="group block rounded-lg p-2.5 transition-colors hover:bg-zinc-100/80 dark:hover:bg-[#1f1f24]"
+      className="group block rounded-lg p-2.5 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
       title="查看该目标的任务"
     >
       <p className="truncate text-sm font-medium">{goal.title}</p>
       <div className="mt-2 flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-400/35 dark:bg-zinc-500/35">
           <div className="h-full rounded-full bg-rose-500" style={{ width: `${rate}%` }} />
         </div>
         <span className="shrink-0 text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
@@ -343,7 +343,7 @@ function InspirationQuick() {
     <div className="space-y-3">
       <div className="flex gap-2">
         <input
-          className="flex-1 rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
+          className="flex-1 rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100"
           placeholder="迸发了什么想法？随手记…"
           value={draft}
           maxLength={500}
@@ -353,7 +353,7 @@ function InspirationQuick() {
         <button
           onClick={submit}
           disabled={!draft.trim() || createMutation.isPending}
-          className="shrink-0 rounded-lg bg-rose-500 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 disabled:opacity-50"
+          className="shrink-0 rounded-lg bg-rose-500 px-3.5 py-2 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 disabled:opacity-50"
         >
           记下
         </button>

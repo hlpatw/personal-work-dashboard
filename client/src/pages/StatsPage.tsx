@@ -24,9 +24,9 @@ import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
 
 // 图表颜色：已通过色盲安全与对比度验证
-// （浅色基于 #ffffff 表面、深色基于 #17171b 表面；分类槽位固定，色彩跟随实体）
+// （rose 槽位为单一色相 351/89 的文字档明度，与全站粉色体系一致）
 const SERIES = {
-  pink: { light: '#db2777', dark: '#ec4899' },
+  pink: { light: '#f44a63', dark: '#f6657b' },
   blue: { light: '#2a78d6', dark: '#3987e5' },
   aqua: { light: '#1baf7a', dark: '#199e70' },
   yellow: { light: '#eda100', dark: '#c98500' },
@@ -89,8 +89,8 @@ export default function StatsPage() {
   const totalDone = (categories ?? []).reduce((s, x) => s + x.done, 0);
   const overallRate = totalTasks === 0 ? 0 : Math.round((totalDone / totalTasks) * 100);
 
-  // 表面与墨色（与专业风卡片一致：亮 #ffffff / 暗 #17171b）
-  const surface = mode === 'dark' ? '#17171b' : '#ffffff';
+  // 表面与墨色（图表 tooltip/描边：浅色近白、深色对齐弹窗表面 #1e1e24）
+  const surface = mode === 'dark' ? '#1e1e24' : '#ffffff';
   const gridLine = mode === 'dark' ? '#26262b' : '#ececef';
   const axisInk = '#8b8b93';
   const secondaryInk = mode === 'dark' ? '#c5c5cc' : '#4b4b52';
@@ -103,7 +103,7 @@ export default function StatsPage() {
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatCard label="总完成率" valueColor="text-rose-500 dark:text-rose-400" value={overallRate} suffix="%" hint={`${totalDone} / ${totalTasks} 项任务`} />
+        <StatCard label="总完成率" valueColor="text-rose-600 dark:text-rose-400" value={overallRate} suffix="%" hint={`${totalDone} / ${totalTasks} 项任务`} />
         <StatCard
           label="本周完成"
           valueColor="text-emerald-500 dark:text-emerald-400"
@@ -238,7 +238,7 @@ export default function StatsPage() {
                 <td className="py-2 text-right tabular-nums">{x.done}</td>
                 <td className="py-2">
                   <div className="flex items-center justify-end gap-2">
-                    <div className="h-1.5 w-14 shrink-0 overflow-hidden rounded-full bg-rose-100 dark:bg-rose-500/20">
+                    <div className="h-1 w-14 shrink-0 overflow-hidden rounded-full bg-zinc-400/30 dark:bg-zinc-500/30">
                       <div
                         className="h-full rounded-full bg-rose-500"
                         style={{ width: `${x.completion_rate}%` }}
@@ -289,7 +289,7 @@ function StatCard({
     <Card className="p-4">
       <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
       <p
-        className={`mt-1 text-2xl font-semibold tracking-tight ${
+        className={`mt-1 text-2xl font-semibold tracking-tight tabular-nums ${
           valueColor || 'text-zinc-900 dark:text-zinc-50'
         }`}
       >

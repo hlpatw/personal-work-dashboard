@@ -18,7 +18,7 @@ import Lightbox from '../components/Lightbox';
 import { IconPencil, IconTrash } from '../components/icons';
 
 const selectCls =
-  'rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-200 dark:hover:bg-[#26262b]';
+  'rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/[0.08]';
 
 export default function InspirationPage() {
   const queryClient = useQueryClient();
@@ -96,7 +96,7 @@ export default function InspirationPage() {
         <div className="flex gap-2">
           <ImageInput value={draftImage} onChange={setDraftImage} />
           <input
-            className="flex-1 rounded-lg bg-zinc-100 px-3.5 py-2.5 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
+            className="flex-1 rounded-lg bg-black/[0.035] px-3.5 py-2.5 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100"
             placeholder="迸发了什么想法？记下来…（可 Ctrl+V 粘贴截图）"
             value={draft}
             maxLength={500}
@@ -118,7 +118,7 @@ export default function InspirationPage() {
           <button
             onClick={submitDraft}
             disabled={(!draft.trim() && !draftImage) || createMutation.isPending}
-            className="shrink-0 rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
+            className="shrink-0 rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
           >
             记下
           </button>
@@ -202,11 +202,11 @@ function InspirationCard({
 
   if (editing) {
     return (
-      <Card className="p-4 ring-1 ring-rose-500/30">
+      <Card className="p-4 ring-1 ring-rose-400/40">
         <div className="space-y-2.5">
           <ImageInput value={draftImage} onChange={setDraftImage} />
           <textarea
-            className="w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
+            className="w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100"
             value={draft}
             maxLength={500}
             rows={3}
@@ -215,7 +215,7 @@ function InspirationCard({
           />
           <div className="flex items-center justify-between gap-2">
             <select
-              className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 outline-none dark:bg-[#1f1f24] dark:text-zinc-200"
+              className="rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm text-zinc-700 outline-none dark:bg-white/[0.05] dark:text-zinc-200"
               value={draftCategory}
               onChange={(e) => setDraftCategory(e.target.value as InspirationCategory)}
             >
@@ -228,14 +228,14 @@ function InspirationCard({
             <div className="flex gap-2">
               <button
                 onClick={() => setEditing(false)}
-                className="rounded-lg px-3 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+                className="rounded-lg px-3 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
               >
                 取消
               </button>
               <button
                 onClick={save}
                 disabled={(!draft.trim() && !draftImage) || updateMutation.isPending}
-                className="rounded-lg bg-rose-500 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-rose-400 disabled:opacity-50"
+                className="rounded-lg bg-rose-500 px-4 py-1.5 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 disabled:opacity-50"
               >
                 保存
               </button>
@@ -253,14 +253,14 @@ function InspirationCard({
         <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button
             onClick={startEdit}
-            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+            className="rounded-md p-1.5 text-zinc-400 hover:bg-black/[0.05] hover:text-zinc-600 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
             title="编辑"
           >
             <IconPencil />
           </button>
           <button
             onClick={onConvert}
-            className="rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400"
+            className="rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-rose-500/[0.16] hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400"
             title="转为任务"
           >
             → 转任务

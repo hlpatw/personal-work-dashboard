@@ -23,7 +23,7 @@ const NAV_ITEMS = [
 ];
 
 const inputCls =
-  'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
+  'w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100';
 
 export default function Sidebar() {
   const theme = useThemeStore((s) => s.theme);
@@ -47,14 +47,14 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-black/[0.06] bg-[#f2f2f4] py-4 dark:border-white/[0.05] dark:bg-[#0a0a0c] md:w-56 md:items-stretch md:px-3">
+    <aside className="flex h-screen w-16 flex-col items-center gap-1 border-r border-black/[0.06] bg-[#faf6f9]/[0.74] py-4 backdrop-blur-[22px] backdrop-saturate-140 dark:border-white/[0.05] dark:bg-[#09090c]/[0.72] md:w-56 md:items-stretch md:px-3">
       {/* 个人区 */}
       <button
         onClick={openEdit}
         className="mb-4 flex items-center justify-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.04] md:justify-start"
         title="编辑个人信息"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-sm font-semibold text-rose-500 dark:text-rose-400">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-sm font-semibold text-rose-600 dark:text-rose-400">
           {nickname.slice(0, 1)}
         </span>
         <span className="hidden min-w-0 flex-col items-start md:flex">
@@ -70,16 +70,23 @@ export default function Sidebar() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors md:justify-start ${
+              `relative flex items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors md:justify-start ${
                 isActive
-                  ? 'bg-black/[0.06] font-medium text-zinc-900 dark:bg-white/[0.07] dark:text-white'
+                  ? 'bg-rose-500/15 font-medium text-zinc-900 dark:bg-rose-500/15 dark:text-white'
                   : 'text-zinc-500 hover:bg-black/[0.035] hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.04] dark:hover:text-zinc-100'
               }`
             }
             title={item.label}
           >
-            <item.icon className="h-[17px] w-[17px] shrink-0" />
-            <span className="hidden md:inline">{item.label}</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 hidden h-3.5 w-0.5 -translate-y-1/2 rounded-full bg-rose-500 md:block" />
+                )}
+                <item.icon className="h-[17px] w-[17px] shrink-0" />
+                <span className="hidden md:inline">{item.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -137,13 +144,13 @@ export default function Sidebar() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setEditing(false)}
-                className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+                className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
               >
                 取消
               </button>
               <button
                 onClick={save}
-                className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400"
+                className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400"
               >
                 保存
               </button>

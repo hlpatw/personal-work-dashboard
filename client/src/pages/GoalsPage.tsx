@@ -21,7 +21,7 @@ import Lightbox from '../components/Lightbox';
 import { IconPencil, IconTrash } from '../components/icons';
 
 const inputCls =
-  'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
+  'w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100';
 
 /** 剩余天数：正数=还有 N 天，0=今天，负数=已过 N 天 */
 function daysLeft(target: string | null): number | null {
@@ -69,7 +69,7 @@ export default function GoalsPage() {
         actions={
           <>
             <select
-              className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-200 dark:hover:bg-[#26262b]"
+              className="rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as GoalStatus | '')}
             >
@@ -80,7 +80,7 @@ export default function GoalsPage() {
             </select>
             <button
               onClick={() => setDialogGoal(null)}
-              className="rounded-lg bg-rose-500 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
+              className="rounded-lg bg-rose-500 px-3.5 py-1.5 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
             >
               ＋ 新建目标
             </button>
@@ -145,7 +145,7 @@ function GoalCard({
   return (
     <div
       onClick={onEdit}
-      className="group cursor-pointer rounded-xl bg-white p-4 ring-1 ring-black/[0.05] transition-shadow hover:shadow-md hover:shadow-black/[0.04] dark:bg-[#17171b] dark:ring-white/[0.045] dark:hover:shadow-black/30"
+      className="group cursor-pointer rounded-[14px] border border-black/[0.07] bg-white/[0.72] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(24,24,34,0.04),0_12px_30px_-18px_rgba(24,24,34,0.22)] backdrop-blur-[12px] backdrop-saturate-150 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-rose-400/30 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_14px_34px_-20px_rgba(24,24,34,0.3)] dark:border-white/[0.07] dark:bg-white/[0.035] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_0_rgba(0,0,0,0.35),0_16px_40px_-22px_rgba(0,0,0,0.95)] dark:hover:border-rose-400/30 dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_18px_44px_-22px_rgba(0,0,0,1)]"
     >
       <div className="mb-1 flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -162,7 +162,7 @@ function GoalCard({
         >
           <button
             onClick={onEdit}
-            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+            className="rounded-md p-1.5 text-zinc-400 hover:bg-black/[0.05] hover:text-zinc-600 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
             title="编辑"
           >
             <IconPencil />
@@ -208,7 +208,7 @@ function GoalCard({
 
       {/* 进度 */}
       <div className="mt-3 flex items-center gap-3">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-400/35 dark:bg-zinc-500/35">
           <div
             className={`h-full rounded-full transition-[width] duration-500 ${goal.status === 'done' ? 'bg-emerald-500' : 'bg-rose-500'}`}
             style={{ width: `${rate}%` }}
@@ -244,7 +244,7 @@ function GoalCard({
           {goal.task_total > 0 && (
             <Link
               to={`/tasks?goal=${goal.id}`}
-              className="text-rose-500 hover:underline dark:text-rose-400"
+              className="text-rose-600 hover:underline dark:text-rose-400"
               onClick={(e) => e.stopPropagation()}
             >
               查看任务 →
@@ -348,14 +348,14 @@ function GoalFormDialog({ goal, onClose }: { goal: Goal | null; onClose: () => v
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+            className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
           >
             取消
           </button>
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
+            className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
           >
             {mutation.isPending ? '保存中…' : goal ? '保存' : '创建目标'}
           </button>

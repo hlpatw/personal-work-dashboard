@@ -95,12 +95,12 @@ export interface Inspiration {
 
 export type InspirationInput = Pick<Inspiration, 'content' | 'category' | 'image_url'>;
 
-/** 灵感类型徽章（中性专业风） */
+/** 灵感类型徽章（精致模式：统一浅底 12~16% + 中等字重） */
 export const INSPIRATION_CATEGORY_META: Record<InspirationCategory, string> = {
-  灵感: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
-  工作: 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300',
-  生活: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
-  心情: 'bg-violet-500/10 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',
+  灵感: 'bg-rose-500/[0.16] font-medium text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
+  工作: 'bg-zinc-500/15 font-medium text-zinc-600 dark:bg-zinc-400/15 dark:text-zinc-300',
+  生活: 'bg-emerald-500/15 font-medium text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+  心情: 'bg-violet-500/15 font-medium text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',
 };
 
 export interface StatsSummary {
@@ -141,12 +141,12 @@ export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   low: '低',
 };
 
-/** 分类展示：四色徽章（轻量彩色化——只点缀徽章小面积，其余保持灰阶） */
+/** 分类展示：四色徽章（精致模式：统一浅底 + 中等字重，只点缀小面积） */
 export const CATEGORY_META: Record<string, { chip: string }> = {
-  工作: { chip: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400' },
-  学习: { chip: 'bg-sky-500/10 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400' },
-  生活: { chip: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' },
-  其他: { chip: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400' },
+  工作: { chip: 'bg-rose-500/[0.16] font-medium text-rose-600 dark:bg-rose-500/15 dark:text-rose-400' },
+  学习: { chip: 'bg-sky-500/15 font-medium text-sky-600 dark:bg-sky-500/15 dark:text-sky-400' },
+  生活: { chip: 'bg-emerald-500/15 font-medium text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' },
+  其他: { chip: 'bg-amber-500/15 font-medium text-amber-600 dark:bg-amber-500/15 dark:text-amber-400' },
 };
 
 /** 优先级圆点颜色 */
@@ -158,7 +158,7 @@ export const PRIORITY_DOT: Record<TaskPriority, string> = {
 };
 
 export const STATUS_BADGE: Record<TaskStatus, string> = {
-  todo: 'bg-black/[0.06] text-zinc-500 dark:bg-white/[0.08] dark:text-zinc-400',
-  in_progress: 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
-  done: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+  todo: 'bg-zinc-500/15 font-medium text-zinc-500 dark:bg-zinc-400/15 dark:text-zinc-400',
+  in_progress: 'bg-rose-500/[0.16] font-medium text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
+  done: 'bg-emerald-500/15 font-medium text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
 };

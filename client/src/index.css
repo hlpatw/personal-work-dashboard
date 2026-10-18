@@ -3,6 +3,42 @@
 /* dark 变体跟随 <html class="dark">，而非系统偏好 */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================
+   单一色相粉（2026-10-18 氛围层定稿：玫红 351/89 + 嫩度 75）
+   四档明度，全站粉色元素都从这里派生：
+   - 文字/链接  L 62.4（浅）/ 68（深）→ rose-600 / dark:rose-400
+   - 柔和档     L 80（浅）/ 82（深）→ rose-400（焦点环 / hover / 光晕）
+   - 色块档     L 84（两主题同值）→ rose-500（按钮 / 勾选 / 今日），
+                上面配深玫红文字 text-rose-fg（L 26）
+   - 逾期/警示  同色相压深 → red-* 重映射，不再引入第二种红
+   注意：衍生色必须是字面值（不能在 :root 里组合 var(--rose-h)，
+   那样 body 级覆盖不生效——踩过的坑）
+   ============================================================ */
+@theme {
+  --color-rose-100: hsl(351 89% 84% / 0.16); /* 浅粉底：日历事件 chip 等 */
+  --color-rose-300: hsl(351 89% 86%);        /* 浅色 hover 边框 */
+  --color-rose-400: hsl(351 89% 80%);        /* 柔和档（浅）*/
+  --color-rose-500: hsl(351 89% 84%);        /* 色块档（嫩粉，配深字）*/
+  --color-rose-600: hsl(351 89% 62.4%);      /* 文字/链接（浅）*/
+  --color-rose-700: hsl(351 89% 62.4%);      /* 日历事件文字（浅）*/
+  --color-red-50: hsl(351 72% 44% / 0.1);    /* 危险 hover 浅底 */
+  --color-red-100: hsl(351 72% 44% / 0.12);  /* 逾期徽章浅底 */
+  --color-red-400: hsl(351 72% 54%);         /* 危险 hover 文字（浅）*/
+  --color-red-500: hsl(351 72% 44%);         /* 逾期/警示（浅）*/
+  --color-red-600: hsl(351 72% 44%);         /* 逾期徽章文字（浅）*/
+}
+html.dark {
+  --color-rose-300: hsl(351 89% 68%);   /* 日历事件文字档（深色下 rose-300 当文字用）*/
+  --color-rose-400: hsl(351 89% 68%);   /* 文字/链接档（深色）*/
+  --color-red-400: hsl(351 68% 84%);
+  --color-red-500: hsl(351 68% 76%);    /* 逾期/警示（深色提亮）*/
+}
+
+/* 实心色块上的文字：L84 嫩粉底配深玫红，两主题同值 */
+@utility text-rose-fg {
+  color: hsl(351 58% 26%);
+}
+
 html {
   color-scheme: light;
 }
@@ -10,12 +46,61 @@ html.dark {
   color-scheme: dark;
 }
 
-/* Plane 式专业风：暗色为默认（浅色为同体系灰白版） */
+/* 氛围层：深底 + 亮度分层（浅色为粉白暖底） */
 body {
-  @apply bg-[#f7f7f8] text-[#1b1b1f] antialiased;
+  @apply bg-[#fdfbfc] text-[#1b1b1f] antialiased;
 }
 html.dark body {
-  @apply bg-[#0e0e11] text-[#e8e8ec];
+  @apply bg-[#0b0b0f] text-[#e8e8ec];
+}
+
+/* ============================================================
+   背景三层照度 + 颗粒（标准档；光源锚在视口角落，放中间会透过
+   半透明卡片显出"脏斑"）。aurora 顶部光晕已由这套氛围层取代。
+   ============================================================ */
+.atmos {
+  --atm-glow-a: 0.055; /* 右上品牌光（玫红柔和档）*/
+  --atm-glow-b: 0.05;  /* 左上冷光 */
+  --atm-grain: 0.02;
+  --atm-top: 0.5; /* 顶部纵深渐变 */
+  --atm-glow-a-c: hsl(351 89% 80%);
+  --atm-glow-b-c: hsl(215 48% 76%);
+}
+html.dark .atmos {
+  --atm-glow-a: 0.11;
+  --atm-glow-b: 0.085;
+  --atm-grain: 0.028;
+  --atm-top: 0.022;
+  --atm-glow-b-c: hsl(215 34% 52%);
+}
+.atmos > div {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.atmos .atm-depth {
+  background: linear-gradient(180deg, rgb(255 255 255 / var(--atm-top)) 0%, rgb(255 255 255 / 0) 42%);
+}
+.atmos .atm-glow-a {
+  background: radial-gradient(
+    120% 110% at 100% 0%,
+    color-mix(in srgb, var(--atm-glow-a-c) calc(var(--atm-glow-a) * 100%), transparent) 0%,
+    color-mix(in srgb, var(--atm-glow-a-c) calc(var(--atm-glow-a) * 35%), transparent) 30%,
+    transparent 58%
+  );
+}
+.atmos .atm-glow-b {
+  background: radial-gradient(
+    115% 105% at 0% 0%,
+    color-mix(in srgb, var(--atm-glow-b-c) calc(var(--atm-glow-b) * 100%), transparent) 0%,
+    color-mix(in srgb, var(--atm-glow-b-c) calc(var(--atm-glow-b) * 40%), transparent) 28%,
+    transparent 56%
+  );
+}
+.atmos .atm-grain {
+  opacity: var(--atm-grain);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* 细滚动条 */
@@ -79,10 +164,16 @@ html.dark * {
 .corgi-md blockquote {
   margin: 0.4rem 0;
   padding-left: 0.7rem;
-  border-left: 2px solid rgba(244, 114, 182, 0.5);
+  border-left: 2px solid hsl(351 89% 80% / 0.5);
   color: inherit;
   opacity: 0.85;
 }
-.corgi-md a { color: #f43f5e; text-decoration: underline; }
+.corgi-md a {
+  color: var(--color-rose-600);
+  text-decoration: underline;
+}
+html.dark .corgi-md a {
+  color: var(--color-rose-400);
+}
 .corgi-md table { border-collapse: collapse; margin: 0.4rem 0; font-size: 0.9em; }
 .corgi-md th, .corgi-md td { border: 1px solid rgba(120, 120, 130, 0.3); padding: 0.2rem 0.5rem; }

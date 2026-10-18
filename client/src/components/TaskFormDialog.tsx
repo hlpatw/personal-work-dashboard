@@ -20,7 +20,7 @@ import {
 const PRESET_TAGS = ['重要', '今日待办', '待定', '已延期', '需确认'];
 
 const inputCls =
-  'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
+  'w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100';
 
 interface Props {
   task: Task | null; // null = 新建
@@ -228,8 +228,8 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
                   }}
                   className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
                     active
-                      ? 'bg-rose-500 text-white'
-                      : 'text-zinc-500 ring-1 ring-inset ring-black/[0.08] hover:text-rose-500 hover:ring-rose-400/40 disabled:opacity-40 dark:text-zinc-400 dark:ring-white/[0.1] dark:hover:text-rose-400'
+                      ? 'bg-rose-500 font-medium text-rose-fg'
+                      : 'text-zinc-500 ring-1 ring-inset ring-black/[0.08] hover:text-rose-600 hover:ring-rose-400/40 disabled:opacity-40 dark:text-zinc-400 dark:ring-white/[0.1] dark:hover:text-rose-400'
                   }`}
                 >
                   {t}
@@ -254,7 +254,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
                   type="button"
                   onClick={() => setSubtasks(subtasks.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
                   className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
-                    s.done ? 'border-rose-500 bg-rose-500 text-white' : 'border-zinc-300 dark:border-zinc-600'
+                    s.done ? 'border-rose-500 bg-rose-500 text-rose-fg' : 'border-zinc-300 dark:border-zinc-600'
                   }`}
                   aria-label="切换子任务完成"
                 >
@@ -293,7 +293,7 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
               <button
                 type="button"
                 onClick={addSubtask}
-                className="shrink-0 rounded-lg bg-zinc-100 px-3 text-sm text-zinc-500 transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-300 dark:hover:bg-[#26262b]"
+                className="shrink-0 rounded-lg bg-black/[0.035] px-3 text-sm text-zinc-500 transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
               >
                 添加
               </button>
@@ -306,14 +306,14 @@ export default function TaskFormDialog({ task, onClose, initialTitle }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+            className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
           >
             取消
           </button>
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
+            className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 disabled:opacity-50"
           >
             {mutation.isPending ? '保存中…' : '保存'}
           </button>

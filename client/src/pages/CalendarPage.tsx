@@ -61,7 +61,7 @@ export default function CalendarPage() {
           <>
             <button
               onClick={() => setCursor(addMonths(cursor, -1))}
-              className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:hover:bg-[#26262b]"
+              className="rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
             >
               ←
             </button>
@@ -70,13 +70,13 @@ export default function CalendarPage() {
                 setCursor(new Date());
                 setSelected(today);
               }}
-              className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:hover:bg-[#26262b]"
+              className="rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
             >
               今天
             </button>
             <button
               onClick={() => setCursor(addMonths(cursor, 1))}
-              className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:hover:bg-[#26262b]"
+              className="rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
             >
               →
             </button>
@@ -113,8 +113,8 @@ export default function CalendarPage() {
                   } ${inMonth ? '' : 'opacity-40'}`}
                 >
                   <span
-                    className={`mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                      ds === today ? 'bg-rose-500 font-semibold text-white' : ''
+                    className={`mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs tabular-nums ${
+                      ds === today ? 'bg-rose-500 font-semibold text-rose-fg' : ''
                     }`}
                   >
                     {d.getDate()}
@@ -145,7 +145,7 @@ export default function CalendarPage() {
             <h2 className="text-sm font-semibold">{formatCN(selected)}</h2>
             <button
               onClick={() => setDialog({ schedule: null })}
-              className="rounded-lg bg-rose-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
+              className="rounded-lg bg-rose-500 px-2.5 py-1 text-xs font-medium text-rose-fg transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
             >
               ＋ 新增
             </button>
@@ -182,7 +182,7 @@ export default function CalendarPage() {
                     >
                       <button
                         onClick={() => setDialog({ schedule: s })}
-                        className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+                        className="rounded p-1 text-zinc-400 hover:bg-black/[0.05] hover:text-zinc-600 dark:hover:bg-white/[0.06]"
                         title="编辑"
                       >
                         <IconPencil />

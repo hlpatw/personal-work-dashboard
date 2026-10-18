@@ -27,13 +27,14 @@ export default function Modal({ title, onClose, children, footer }: ModalProps) 
       }}
     >
       {/* 矮内容时垂直居中（m-auto）；超高时贴顶滚动（遮罩 overflow-y-auto）。
-          显式 max-h：Tailwind v4 下 max-h-full 在该 flex 结构解析异常。 */}
-      <div className="m-auto flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col rounded-xl bg-white shadow-2xl shadow-black/20 ring-1 ring-black/[0.06] dark:bg-[#1b1b20] dark:ring-white/[0.06]">
+          显式 max-h：Tailwind v4 下 max-h-full 在该 flex 结构解析异常。
+          弹窗必须比页面亮一档，否则玻璃卡片层级会塌陷。 */}
+      <div className="m-auto flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col rounded-[14px] border border-black/[0.06] bg-white/[0.94] shadow-2xl shadow-black/25 backdrop-blur-[24px] backdrop-saturate-150 dark:border-white/[0.06] dark:bg-[#1e1e24]/[0.92]">
         <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           <h2 className="text-base font-semibold">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+            className="rounded-md p-1 text-zinc-400 hover:bg-black/[0.05] hover:text-zinc-600 dark:hover:bg-white/[0.06]"
             aria-label="关闭"
           >
             ✕

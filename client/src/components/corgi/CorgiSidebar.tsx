@@ -18,7 +18,7 @@ function renderMarkdown(text: string): string {
 }
 
 const inputCls =
-  'w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100';
+  'w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100';
 
 export default function CorgiSidebar() {
   const { messages, open, addMessage, clearChat, setOpen } = useCorgiChatStore();
@@ -75,7 +75,7 @@ export default function CorgiSidebar() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex h-full w-9 shrink-0 flex-col items-center justify-center gap-2 border-l border-black/[0.06] bg-[#f2f2f4] text-zinc-500 transition-colors hover:bg-zinc-200/60 hover:text-zinc-700 dark:border-white/[0.05] dark:bg-[#0a0a0c] dark:text-zinc-400 dark:hover:bg-[#1f1f24] dark:hover:text-zinc-200"
+        className="flex h-full w-9 shrink-0 flex-col items-center justify-center gap-2 border-l border-black/[0.06] bg-[#faf6f9]/[0.74] text-zinc-500 backdrop-blur-[22px] backdrop-saturate-140 transition-colors hover:bg-black/[0.04] hover:text-zinc-700 dark:border-white/[0.05] dark:bg-[#09090c]/[0.72] dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
         title="展开柯基助手"
         aria-label="展开柯基助手"
       >
@@ -87,7 +87,7 @@ export default function CorgiSidebar() {
 
   // 展开态
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col border-l border-black/[0.06] bg-[#f2f2f4] dark:border-white/[0.05] dark:bg-[#0a0a0c]">
+    <aside className="flex h-full w-80 shrink-0 flex-col border-l border-black/[0.06] bg-[#faf6f9]/[0.74] backdrop-blur-[22px] backdrop-saturate-140 dark:border-white/[0.05] dark:bg-[#09090c]/[0.72]">
       {/* 头部 */}
       <div className="flex shrink-0 items-center justify-between border-b border-black/[0.06] px-4 py-3 dark:border-white/[0.05]">
         <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function CorgiSidebar() {
       {/* 消息区 */}
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {!configured && messages.length === 0 ? (
-          <div className="rounded-xl bg-white p-4 text-center ring-1 ring-black/[0.05] dark:bg-[#17171b] dark:ring-white/[0.045]">
+          <div className="rounded-xl border border-black/[0.06] bg-white/[0.85] p-4 text-center dark:border-white/[0.06] dark:bg-white/[0.06]">
             <p className="text-2xl">🐕</p>
             <p className="mt-2 text-sm font-medium">我是柯基，很高兴认识你！</p>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -132,13 +132,13 @@ export default function CorgiSidebar() {
             </p>
             <button
               onClick={() => setShowSettings(true)}
-              className="mt-3 rounded-lg bg-rose-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-rose-400"
+              className="mt-3 rounded-lg bg-rose-500 px-4 py-1.5 text-xs font-medium text-rose-fg transition-colors hover:bg-rose-400"
             >
               去配置
             </button>
           </div>
         ) : messages.length === 0 ? (
-          <div className="rounded-xl bg-white p-4 text-center ring-1 ring-black/[0.05] dark:bg-[#17171b] dark:ring-white/[0.045]">
+          <div className="rounded-xl border border-black/[0.06] bg-white/[0.85] p-4 text-center dark:border-white/[0.06] dark:bg-white/[0.06]">
             <p className="text-2xl">🐕</p>
             <p className="mt-2 text-sm font-medium">嗨，我是柯基！</p>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -149,7 +149,7 @@ export default function CorgiSidebar() {
           messages.map((m, i) =>
             m.role === 'user' ? (
               <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-rose-500 px-3.5 py-2 text-sm text-white">
+                <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-rose-500 px-3.5 py-2 text-sm text-rose-fg">
                   {m.content}
                 </div>
               </div>
@@ -157,7 +157,7 @@ export default function CorgiSidebar() {
               <div key={i} className="flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 text-base">🐕</span>
                 <div
-                  className="corgi-md max-w-[85%] rounded-2xl rounded-tl-md bg-white px-3.5 py-2 text-sm ring-1 ring-black/[0.05] dark:bg-[#17171b] dark:ring-white/[0.045]"
+                  className="corgi-md max-w-[85%] rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm dark:border-white/[0.06] dark:bg-white/[0.06]"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
                 />
               </div>
@@ -167,7 +167,7 @@ export default function CorgiSidebar() {
         {sending && (
           <div className="flex items-start gap-2">
             <span className="mt-0.5 shrink-0 text-base">🐕</span>
-            <div className="rounded-2xl rounded-tl-md bg-white px-3.5 py-2 text-sm text-zinc-400 ring-1 ring-black/[0.05] dark:bg-[#17171b] dark:ring-white/[0.045]">
+            <div className="rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm text-zinc-400 dark:border-white/[0.06] dark:bg-white/[0.06]">
               <span className="animate-pulse">柯基思考中…</span>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function CorgiSidebar() {
       <div className="shrink-0 border-t border-black/[0.06] p-3 dark:border-white/[0.05]">
         <div className="flex items-end gap-2">
           <textarea
-            className="max-h-28 min-h-[40px] flex-1 resize-none rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-[#1f1f24] dark:text-zinc-100"
+            className="max-h-28 min-h-[40px] flex-1 resize-none rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100"
             placeholder={configured ? '和柯基聊聊…（Enter 发送）' : '请先在设置中配置 AI 接口'}
             rows={1}
             value={draft}
@@ -196,7 +196,7 @@ export default function CorgiSidebar() {
           <button
             onClick={() => void send()}
             disabled={!draft.trim() || sending || !configured}
-            className="shrink-0 rounded-lg bg-rose-500 px-3 py-2 text-white transition-colors hover:bg-rose-400 disabled:opacity-50"
+            className="shrink-0 rounded-lg bg-rose-500 px-3 py-2 text-rose-fg transition-colors hover:bg-rose-400 disabled:opacity-50"
             aria-label="发送"
           >
             <IconChat className="h-4 w-4" />
@@ -283,7 +283,7 @@ function CorgiSettingsModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={() => setShowKey(!showKey)}
-              className="shrink-0 rounded-lg bg-zinc-100 px-3 text-sm text-zinc-500 transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-300 dark:hover:bg-[#26262b]"
+              className="shrink-0 rounded-lg bg-black/[0.035] px-3 text-sm text-zinc-500 transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
             >
               {showKey ? '隐藏' : '显示'}
             </button>
@@ -305,7 +305,7 @@ function CorgiSettingsModal({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={test}
             disabled={testing || !draft.baseUrl || !draft.apiKey || !draft.model}
-            className="rounded-lg bg-zinc-100 px-3.5 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-200/70 disabled:opacity-50 dark:bg-[#1f1f24] dark:text-zinc-300 dark:hover:bg-[#26262b]"
+            className="rounded-lg bg-black/[0.035] px-3.5 py-2 text-sm text-zinc-600 transition-colors hover:bg-black/[0.06] disabled:opacity-50 dark:bg-white/[0.05] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
           >
             {testing ? '测试中…' : '测试连接'}
           </button>
@@ -313,14 +313,14 @@ function CorgiSettingsModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+              className="rounded-lg px-3.5 py-2 text-sm text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
             >
               取消
             </button>
             <button
               type="button"
               onClick={save}
-              className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-400"
+              className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400"
             >
               保存
             </button>

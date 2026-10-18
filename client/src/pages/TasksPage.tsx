@@ -23,7 +23,7 @@ import PageHeader from '../components/PageHeader';
 import { IconClock, IconPencil, IconTrash } from '../components/icons';
 
 const selectCls =
-  'rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-200 dark:hover:bg-[#26262b]';
+  'rounded-lg bg-black/[0.035] px-3 py-1.5 text-sm text-zinc-700 outline-none transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/[0.08]';
 
 export default function TasksPage() {
   const queryClient = useQueryClient();
@@ -115,7 +115,7 @@ export default function TasksPage() {
             {filters.tag && (
               <button
                 onClick={() => setFilters((f) => ({ ...f, tag: undefined }))}
-                className="inline-flex items-center gap-1 rounded-lg bg-rose-500/10 px-2.5 py-1.5 text-sm text-rose-500 transition-colors hover:bg-rose-500/15 dark:text-rose-400"
+                className="inline-flex items-center gap-1 rounded-lg bg-rose-500/[0.16] px-2.5 py-1.5 text-sm text-rose-600 transition-colors hover:bg-rose-500/25 dark:text-rose-400"
                 title="清除标签筛选"
               >
                 #{filters.tag} ✕
@@ -124,7 +124,7 @@ export default function TasksPage() {
             {filters.goalId && (
               <button
                 onClick={() => setFilters((f) => ({ ...f, goalId: undefined }))}
-                className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 px-2.5 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-200/70 dark:bg-[#1f1f24] dark:text-zinc-300 dark:hover:bg-[#26262b]"
+                className="inline-flex items-center gap-1 rounded-lg bg-black/[0.035] px-2.5 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-black/[0.06] dark:bg-white/[0.05] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
                 title="清除目标筛选"
               >
                 目标 #{filters.goalId} ✕
@@ -132,7 +132,7 @@ export default function TasksPage() {
             )}
             <button
               onClick={() => setCreating(true)}
-              className="rounded-lg bg-rose-500 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
+              className="rounded-lg bg-rose-500 px-3.5 py-1.5 text-sm font-medium text-rose-fg transition-colors hover:bg-rose-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
             >
               ＋ 新建任务
             </button>
@@ -156,7 +156,7 @@ export default function TasksPage() {
                 <li
                   key={task.id}
                   onClick={() => setEditing(task)}
-                  className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-zinc-100/80 dark:hover:bg-[#1f1f24]"
+                  className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
                 >
                   <button
                     onClick={(e) => {
@@ -165,7 +165,7 @@ export default function TasksPage() {
                     }}
                     className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
                       task.status === 'done'
-                        ? 'border-rose-500 bg-rose-500 text-white'
+                        ? 'border-rose-500 bg-rose-500 text-rose-fg'
                         : 'border-zinc-300 hover:border-rose-400 dark:border-zinc-600'
                     }`}
                     aria-label={task.status === 'done' ? '标记为待办' : '标记为完成'}
@@ -208,7 +208,7 @@ export default function TasksPage() {
                       {task.tags.map((t) => (
                         <span
                           key={t}
-                          className="cursor-pointer rounded px-1.5 py-px text-[11px] text-zinc-500 ring-1 ring-inset ring-black/[0.07] transition-colors hover:text-rose-500 hover:ring-rose-400/40 dark:text-zinc-400 dark:ring-white/[0.09] dark:hover:text-rose-400"
+                          className="cursor-pointer rounded px-1.5 py-px text-[11px] text-zinc-500 ring-1 ring-inset ring-black/[0.07] transition-colors hover:text-rose-600 hover:ring-rose-400/40 dark:text-zinc-400 dark:ring-white/[0.09] dark:hover:text-rose-400"
                           onClick={(e) => {
                             e.stopPropagation();
                             setFilters((f) => ({ ...f, tag: t }));
@@ -246,7 +246,7 @@ export default function TasksPage() {
                   >
                     <button
                       onClick={() => setEditing(task)}
-                      className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+                      className="rounded-md p-1.5 text-zinc-400 hover:bg-black/[0.05] hover:text-zinc-600 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
                       title="编辑"
                     >
                       <IconPencil />

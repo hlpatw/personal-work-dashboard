@@ -77,7 +77,7 @@ export default function ImageInput({ value, onChange }: Props) {
           onClick={() => fileRef.current?.click()}
           disabled={loading}
           title="贴一张图（也可直接 Ctrl+V 粘贴截图）"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-50 dark:hover:bg-[#26262b] dark:hover:text-zinc-200"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-black/[0.05] hover:text-zinc-600 disabled:opacity-50 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
         >
           {loading ? <span className="animate-pulse text-sm">…</span> : '📎'}
         </button>
