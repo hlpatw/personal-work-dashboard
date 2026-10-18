@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Electron](https://img.shields.io/badge/Electron-39-47848F?logo=electron&logoColor=white)](https://www.electronjs.org)
 [![SQLite](https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white)](https://nodejs.org/api/sqlite.html)
-[![Release](https://img.shields.io/badge/下载-v1.3.2-rose?logo=github)](../../releases)
+[![Release](https://img.shields.io/badge/下载-v1.4.0-rose?logo=github)](../../releases)
 
 > 🐕 一只住在桌面角落的像素柴犬：点亮它开面板，按住它拖到任意位置，平时点击穿透绝不挡你操作。
 >
