@@ -15,6 +15,8 @@ export interface AiConfigState {
   systemPrompt: string;
   /** 发送时向柯基附带今日任务与日程快照（默认开；persist 浅合并，旧数据自动取默认值） */
   todayContext: boolean;
+  /** 柯基工具调用（建任务/查任务/完成/日程/灵感，默认开）；上游不支持时自动降级一次 */
+  toolsEnabled: boolean;
   setConfig: (c: Partial<Omit<AiConfigState, 'setConfig'>>) => void;
 }
 
@@ -26,6 +28,7 @@ export const useAiConfigStore = create<AiConfigState>()(
       model: '',
       systemPrompt: CORGI_DEFAULT_PROMPT,
       todayContext: true,
+      toolsEnabled: true,
       setConfig: (c) => set(c),
     }),
     { name: 'dashboard-ai-config' }

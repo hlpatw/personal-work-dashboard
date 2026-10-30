@@ -1,11 +1,18 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { marked } from 'marked';
 import { useAiConfigStore } from '../../stores/aiConfig';
-import { useCorgiChatStore } from '../../stores/corgiChat';
+import { useCorgiChatStore, CORGI_MIN_WIDTH, CORGI_MAX_WIDTH, CORGI_DEFAULT_WIDTH } from '../../stores/corgiChat';
 import { chat } from '../../api/ai';
 import { QUICK_PROMPT_TODAY } from '../../lib/corgiContext';
 import Modal from '../Modal';
 import { IconChat } from '../icons';
+import SessionMenu from './SessionMenu';
+import ToolCard from './ToolCard';
+import type { ChatMessage } from '../../stores/corgiChat';
+import type { ToolExecOutcome } from '../../lib/corgiTools';
+
+/** 无活跃会话时的稳定空数组（避免每帧新引用触发重渲） */
+const NO_MESSAGES: ChatMessage[] = [];
 
 marked.setOptions({ breaks: true, async: false });
 
@@ -23,23 +30,64 @@ const inputCls =
   'w-full rounded-lg bg-black/[0.035] px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-rose-400/30 dark:bg-white/[0.05] dark:text-zinc-100';
 
 export default function CorgiSidebar() {
-  const { messages, open, streamingText, sending, error, clearChat, setOpen, send } = useCorgiChatStore();
-  const { baseUrl, apiKey, model, todayContext, setConfig } = useAiConfigStore();
+  const {
+    sessions,
+    activeSessionId,
+    open,
+    streamingText,
+    phase,
+    pendingCallIds,
+    error,
+    setOpen,
+    send,
+    width,
+    setWidth,
+  } = useCorgiChatStore();
+  const messages = sessions.find((x) => x.id === activeSessionId)?.messages ?? NO_MESSAGES;
+  const { baseUrl, apiKey, model, todayContext, toolsEnabled, setConfig } = useAiConfigStore();
   const [draft, setDraft] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const configured = Boolean(baseUrl && apiKey && model);
+  /** 流式请求在途（awaiting_confirm 不算忙：可以发新消息，会按跳过善后） */
+  const busy = phase === 'streaming' || phase === 'summarizing';
+
+  // ---- 拖拽调宽：拖动中走本地 dragWidth（不逐帧写 localStorage），松手才落 store ----
+  const [dragWidth, setDragWidth] = useState<number | null>(null);
+  const dragging = useRef(false);
+  const clampWidth = (v: number) =>
+    Math.min(CORGI_MAX_WIDTH, Math.max(CORGI_MIN_WIDTH, Math.min(v, window.innerWidth - 560)));
+
+  const onHandleDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dragging.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+  const onHandleMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragging.current) return;
+    setDragWidth(clampWidth(window.innerWidth - e.clientX));
+  };
+  const onHandleEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    setWidth(clampWidth(window.innerWidth - e.clientX));
+    setDragWidth(null);
+  };
 
   // 新消息 / 流式增量 → 自动滚到底
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [messages.length, sending, streamingText]);
+  }, [messages.length, phase, streamingText]);
 
   const doSend = (text?: string) => {
     const content = (text ?? draft).trim();
-    if (!content || sending) return;
+    if (!content || busy) return;
     setDraft('');
     void send(content);
   };
@@ -73,23 +121,32 @@ export default function CorgiSidebar() {
 
   // 展开态
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col border-l border-black/[0.06] bg-[#faf6f9]/[0.74] backdrop-blur-[22px] backdrop-saturate-140 dark:border-white/[0.05] dark:bg-[#09090c]/[0.72]">
-      {/* 头部 */}
+    <aside
+      data-testid="corgi-sidebar"
+      style={{ width: dragWidth ?? width }}
+      className={`relative flex h-full shrink-0 flex-col border-l border-black/[0.06] bg-[#faf6f9]/[0.74] backdrop-blur-[22px] backdrop-saturate-140 dark:border-white/[0.05] dark:bg-[#09090c]/[0.72] ${
+        dragWidth ? 'transition-none' : 'transition-[width] duration-100 ease-out'
+      }`}
+    >
+      {/* 左缘拖拽把手：平时隐形，hover / 拖动中显玫红；双击回默认宽 */}
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="拖动调整柯基侧栏宽度"
+        title="拖动调宽 · 双击恢复默认"
+        onPointerDown={onHandleDown}
+        onPointerMove={onHandleMove}
+        onPointerUp={onHandleEnd}
+        onPointerCancel={onHandleEnd}
+        onDoubleClick={() => setWidth(CORGI_DEFAULT_WIDTH)}
+        className={`absolute -left-1 top-0 z-10 h-full w-1.5 cursor-col-resize rounded transition-colors ${
+          dragWidth ? 'bg-rose-400/45' : 'hover:bg-rose-400/45'
+        }`}
+      />
+      {/* 头部：左侧会话菜单（切换/删除/新建），右侧设置与收起 */}
       <div className="flex shrink-0 items-center justify-between border-b border-black/[0.06] px-4 py-3 dark:border-white/[0.05]">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🐕</span>
-          <span className="text-sm font-semibold">柯基</span>
-        </div>
+        <SessionMenu />
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              if (messages.length === 0 || window.confirm('开始新对话？当前聊天记录将被清空。')) clearChat();
-            }}
-            className="rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
-            title="新对话"
-          >
-            新对话
-          </button>
           <button
             onClick={() => setShowSettings(true)}
             className="rounded-md px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
@@ -139,26 +196,54 @@ export default function CorgiSidebar() {
             </button>
           </div>
         ) : (
-          messages.map((m, i) =>
-            m.role === 'user' ? (
-              <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-rose-500 px-3.5 py-2 text-sm text-rose-fg">
-                  {m.content}
+          messages.map((m, i) => {
+            if (m.role === 'user') {
+              return (
+                <div key={i} className="flex justify-end">
+                  <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-rose-500 px-3.5 py-2 text-sm text-rose-fg">
+                    {m.content}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div key={i} className="flex items-start gap-2">
-                <span className="mt-0.5 shrink-0 text-base">🐕</span>
-                <div
-                  className="corgi-md max-w-[85%] rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm dark:border-white/[0.06] dark:bg-white/[0.06]"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
-                />
-              </div>
-            )
-          )
+              );
+            }
+            if (m.role === 'assistant') {
+              if ('toolCalls' in m) {
+                // 工具确认卡：pendingCallIds 命中=待确认；后续 tool 消息齐=结果态；否则失效（刷新）
+                const answered = new Map<string, ToolExecOutcome>();
+                for (const later of messages.slice(i + 1)) {
+                  if (later.role === 'tool' && m.toolCalls.some((c) => c.id === later.toolCallId)) {
+                    answered.set(later.toolCallId, later.outcome);
+                  }
+                }
+                const isPending = m.toolCalls.some((c) => pendingCallIds?.includes(c.id));
+                const allAnswered = m.toolCalls.every((c) => answered.has(c.id));
+                const outcomes = m.toolCalls
+                  .map((c) => answered.get(c.id))
+                  .filter((o): o is ToolExecOutcome => Boolean(o));
+                return (
+                  <ToolCard
+                    key={i}
+                    calls={m.toolCalls}
+                    outcomes={outcomes}
+                    state={isPending ? 'pending' : allAnswered ? 'done' : 'stale'}
+                  />
+                );
+              }
+              return (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="mt-0.5 shrink-0 text-base">🐕</span>
+                  <div
+                    className="corgi-md max-w-[85%] rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm dark:border-white/[0.06] dark:bg-white/[0.06]"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
+                  />
+                </div>
+              );
+            }
+            return null; // tool 结果消息已并入对应确认卡
+          })
         )}
         {/* 流式中的临时气泡（全文增量重渲） */}
-        {sending && streamingText && (
+        {busy && streamingText && (
           <div className="flex items-start gap-2">
             <span className="mt-0.5 shrink-0 text-base">🐕</span>
             <div
@@ -167,7 +252,7 @@ export default function CorgiSidebar() {
             />
           </div>
         )}
-        {sending && !streamingText && (
+        {busy && !streamingText && (
           <div className="flex items-start gap-2">
             <span className="mt-0.5 shrink-0 text-base">🐕</span>
             <div className="rounded-2xl rounded-tl-md border border-black/[0.06] bg-white/[0.85] px-3.5 py-2 text-sm text-zinc-400 dark:border-white/[0.06] dark:bg-white/[0.06]">
@@ -182,8 +267,8 @@ export default function CorgiSidebar() {
 
       {/* 输入区 */}
       <div className="shrink-0 border-t border-black/[0.06] p-3 dark:border-white/[0.05]">
-        {/* 今日安排开关：发送时附带今日任务/日程快照 */}
-        <div className="mb-2 flex items-center justify-between">
+        {/* 今日安排：发送时附带今日任务/日程快照；系统操作：柯基工具调用总开关 */}
+        <div className="mb-2 flex items-center gap-1.5">
           <button
             onClick={() => setConfig({ todayContext: !todayContext })}
             className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
@@ -195,6 +280,17 @@ export default function CorgiSidebar() {
           >
             🗓 今日安排 {todayContext ? '· 开' : '· 关'}
           </button>
+          <button
+            onClick={() => setConfig({ toolsEnabled: !toolsEnabled })}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              toolsEnabled
+                ? 'bg-rose-500/[0.16] text-rose-600 dark:text-rose-400'
+                : 'bg-zinc-500/15 text-zinc-400 dark:text-zinc-500'
+            }`}
+            title={toolsEnabled ? '已开启：柯基可帮你建任务/查任务/完成/建日程/记灵感（写操作先经确认卡）' : '已关闭：柯基纯聊天，不能操作系统'}
+          >
+            🔧 系统操作 {toolsEnabled ? '· 开' : '· 关'}
+          </button>
         </div>
         <div className="flex items-end gap-2">
           <textarea
@@ -203,7 +299,7 @@ export default function CorgiSidebar() {
             placeholder={configured ? '和柯基聊聊…（Enter 发送）' : '请先在设置中配置 AI 接口'}
             rows={1}
             value={draft}
-            disabled={!configured || sending}
+            disabled={!configured || busy}
             onChange={(e) => {
               setDraft(e.target.value);
               e.target.style.height = 'auto';
@@ -213,7 +309,7 @@ export default function CorgiSidebar() {
           />
           <button
             onClick={() => doSend()}
-            disabled={!draft.trim() || sending || !configured}
+            disabled={!draft.trim() || busy || !configured}
             className="shrink-0 rounded-lg bg-rose-500 px-3 py-2 text-rose-fg transition-colors hover:bg-rose-400 disabled:opacity-50"
             aria-label="发送"
           >

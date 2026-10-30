@@ -67,7 +67,7 @@ npm run dist       # 一键：构建前端 → 编译后端 → 生成安装包
 其他命令：
 
 ```powershell
-npm test           # 后端 API 测试（45 个用例）
+npm test           # 后端 API 测试（51 个用例）
 npm run seed       # 写入示例数据（任务/日程/目标/灵感全覆盖）
 npm run reset      # 清空全部数据，从零开始录入自己的内容
 npm run build      # 前端类型检查 + 生产构建
@@ -87,7 +87,7 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 
 - **交互优化**：任务/目标/日程整块点击即编辑；分类使用彩色徽章；AI 侧栏展开时日历保持自适应
 - **贴图**：任务、目标和灵感均支持选图或 `Ctrl+V` 粘贴截图，自动压缩并可点击全屏查看
-- **🐕 柯基 AI 助手**：右侧可折叠聊天侧栏，配置任意 OpenAI 兼容接口（地址/模型/Key 仅存本地浏览器）；回复**流式逐字输出**；「今日安排」开关让柯基看到你的今日任务与日程，空对话一键"帮我安排今天"；柯基人格可自定义，回复支持 Markdown 渲染，聊天历史本地保留
+- **🐕 柯基 AI 助手**：右侧可折叠聊天侧栏（宽度可拖拽调整、双击回默认），配置任意 OpenAI 兼容接口（地址/模型/Key 仅存本地浏览器）；回复**流式逐字输出**；**多会话管理**（自动命名/切换/删除）；「今日安排」开关让柯基看到你的今日任务与日程；**工具调用**：柯基能真的帮你建任务/查任务/勾选完成/建日程/记灵感——写操作先出确认卡（逐条勾选、标题可微调），确认后写入系统再流式总结；柯基人格可自定义，回复支持 Markdown 渲染，聊天历史本地保留
 - **主题**：侧栏底部按钮切换深/浅色（默认专业暗色），选择持久化，刷新不闪烁
 - **桌面宠物**：像素柴犬常驻右下角；平时点击穿透不挡其他窗口，悬停激活（发光提示）后可点击开面板/拖动/右键菜单
 - **数据**：存储于 `server/data/dashboard.db`（SQLite，WAL 模式），重启不丢失；安装包版存于 `%APPDATA%\desktop\data\dashboard.db`
@@ -126,7 +126,7 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 | PATCH | `/api/goals/:id/status` | 目标状态流转 |
 | GET/POST | `/api/inspirations` | 灵感列表（q/category 筛选）/ 新建 |
 | GET/PUT/DELETE | `/api/inspirations/:id` | 灵感详情 / 原地编辑 / 删除 |
-| POST | `/api/ai/chat` | 柯基 AI 转发（OpenAI 兼容，`stream:true` 走 SSE 流式） |
+| POST | `/api/ai/chat` | 柯基 AI 转发（OpenAI 兼容，`stream:true` 走 SSE 流式；透传 `tools`/`tool_choice`，聚合上游 `tool_calls` 碎片为第四事件 `tool_calls`；执行在前端确认后走各业务 REST） |
 
 ## 多人使用与未来扩展
 

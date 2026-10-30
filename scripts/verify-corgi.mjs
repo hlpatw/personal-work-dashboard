@@ -110,9 +110,11 @@ try {
   ok('开关关 → 不注入快照', c2 && !c2.system.includes('今日工作台快照'));
   await chip.click();
 
-  // 5. 空对话快捷指令：新对话（confirm 自动接受）→ 填入但不直接发送
+  // 5. 空对话快捷指令：新对话（会话菜单入口）→ 填入但不直接发送
   page.on('dialog', (d) => d.accept());
-  await page.click('button:has-text("新对话")');
+  await page.click('[data-testid="corgi-session-trigger"]');
+  await page.waitForTimeout(300);
+  await page.click('[data-testid="corgi-new-session"]');
   await page.waitForTimeout(300);
   const quick = page.locator('button', { hasText: '帮我安排今天' });
   if (await quick.count()) {

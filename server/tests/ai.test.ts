@@ -43,6 +43,14 @@ function body(baseUrl: string, extra: Record<string, unknown> = {}) {
 /** 上游 SSE chunk 帧 */
 const sseChunk = (text: string) => `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`;
 
+/** 把自家 SSE 响应全文解析成事件数组（便于断言顺序与结构） */
+function sseEvents(text: string): { type?: string; [k: string]: unknown }[] {
+  return text
+    .split('\n\n')
+    .filter((l) => l.startsWith('data: '))
+    .map((l) => JSON.parse(l.slice(6)));
+}
+
 describe('ai/chat', () => {
   it('非流式：上游 JSON → {content}', async () => {
     const up = await startUpstream((_req, res) => {
@@ -167,7 +175,7 @@ describe('ai/chat', () => {
     }
   });
 
-  it('zod 校验：stream 非布尔 / 消息超 40 条 → 400', async () => {
+  it('zod 校验：stream 非布尔 / 消息超 80 条 → 400', async () => {
     const up = await startUpstream(() => {});
     const app = createApp(':memory:');
     const r1 = await request(app).post('/api/ai/chat').send(body(up.baseUrl, { stream: 'yes' }));
@@ -176,10 +184,166 @@ describe('ai/chat', () => {
       .post('/api/ai/chat')
       .send(
         body(up.baseUrl, {
-          messages: Array.from({ length: 41 }, () => ({ role: 'user' as const, content: 'x' })),
+          messages: Array.from({ length: 81 }, () => ({ role: 'user' as const, content: 'x' })),
         })
       );
     expect(r2.status).toBe(400);
     expect(r2.body.error).toContain('对话历史过长');
+  });
+
+  /* ---------------- 工具调用（function calling） ---------------- */
+
+  const TOOLS = [
+    {
+      type: 'function' as const,
+      function: { name: 'create_tasks', description: '批量创建任务', parameters: { type: 'object' } },
+    },
+  ];
+
+  it('流式 tool_calls 碎片聚合 → tool_calls 事件（done 之前，arguments 完整）', async () => {
+    const up = await startUpstream((_req, res) => {
+      res.setHeader('content-type', 'text/event-stream');
+      void (async () => {
+        // 首块带 id/name + 半截 arguments，后续块续 arguments（跨块分片）
+        res.write(
+          `data: ${JSON.stringify({
+            choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_1', function: { name: 'create_tasks', arguments: '{"ta' } }] } }],
+          })}\n\n`,
+        );
+        res.write(
+          `data: ${JSON.stringify({
+            choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: 'sks":[{"title":"写周报"}]}' } }] } }],
+          })}\n\n`,
+        );
+        res.write(sseChunk('帮你记好了'));
+        res.write('data: [DONE]\n\n');
+        res.end();
+      })();
+    });
+    const res = await request(createApp(':memory:'))
+      .post('/api/ai/chat')
+      .send(body(up.baseUrl, { stream: true, tools: TOOLS }));
+    expect(res.status).toBe(200);
+    const events = sseEvents(res.text);
+    const tcIdx = events.findIndex((e) => e.type === 'tool_calls');
+    const doneIdx = events.findIndex((e) => e.type === 'done');
+    expect(tcIdx).toBeGreaterThan(-1);
+    expect(doneIdx).toBeGreaterThan(tcIdx);
+    expect(events[tcIdx].tool_calls).toEqual([
+      {
+        id: 'call_1',
+        type: 'function',
+        function: { name: 'create_tasks', arguments: '{"tasks":[{"title":"写周报"}]}' },
+      },
+    ]);
+    // 前置文本照常 delta + done 全文
+    expect(res.text).toContain('"type":"delta","content":"帮你记好了"');
+    expect(res.text).toContain('"type":"done","content":"帮你记好了"');
+  });
+
+  it('tools / tool_choice 原样透传到上游', async () => {
+    let received: { tools?: unknown; tool_choice?: unknown } = {};
+    const up = await startUpstream((req, res) => {
+      let raw = '';
+      req.on('data', (c: Buffer) => (raw += c));
+      req.on('end', () => {
+        received = JSON.parse(raw);
+        res.setHeader('content-type', 'text/event-stream');
+        res.write(sseChunk('好'));
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+    });
+    const res = await request(createApp(':memory:'))
+      .post('/api/ai/chat')
+      .send(body(up.baseUrl, { stream: true, tools: TOOLS, tool_choice: 'auto' }));
+    expect(res.status).toBe(200);
+    expect(received.tools).toEqual(TOOLS);
+    expect(received.tool_choice).toBe('auto');
+  });
+
+  it('消息放宽：assistant 带 tool_calls + role:tool 回传可通过并到达上游', async () => {
+    let received: { messages?: unknown[] } = {};
+    const up = await startUpstream((req, res) => {
+      let raw = '';
+      req.on('data', (c: Buffer) => (raw += c));
+      req.on('end', () => {
+        received = JSON.parse(raw);
+        res.setHeader('content-type', 'text/event-stream');
+        res.write(sseChunk('收到'));
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+    });
+    const messages = [
+      { role: 'user' as const, content: '帮我记个任务' },
+      {
+        role: 'assistant' as const,
+        content: '',
+        tool_calls: [
+          { id: 'call_1', type: 'function' as const, function: { name: 'create_tasks', arguments: '{"tasks":[]}' } },
+        ],
+      },
+      { role: 'tool' as const, content: '{"ok":true}', tool_call_id: 'call_1', name: 'create_tasks' },
+    ];
+    const res = await request(createApp(':memory:'))
+      .post('/api/ai/chat')
+      .send(body(up.baseUrl, { stream: true, messages }));
+    expect(res.status).toBe(200);
+    expect(received.messages).toEqual(messages);
+  });
+
+  it('zod 校验：tool_choice 非法 → 400', async () => {
+    const up = await startUpstream(() => {});
+    const res = await request(createApp(':memory:'))
+      .post('/api/ai/chat')
+      .send(body(up.baseUrl, { stream: true, tools: TOOLS, tool_choice: 'required' }));
+    expect(res.status).toBe(400);
+  });
+
+  it('非流式：message.tool_calls → { content:"", toolCalls }（content 可为 null）', async () => {
+    const up = await startUpstream((_req, res) => {
+      res.setHeader('content-type', 'application/json');
+      res.end(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: null,
+                tool_calls: [{ id: 'call_9', function: { name: 'list_tasks', arguments: '{"today":true}' } }],
+              },
+            },
+          ],
+        }),
+      );
+    });
+    const res = await request(createApp(':memory:'))
+      .post('/api/ai/chat')
+      .send(body(up.baseUrl, { tools: TOOLS }));
+    expect(res.status).toBe(200);
+    expect(res.body.content).toBe('');
+    expect(res.body.toolCalls).toEqual([
+      { id: 'call_9', type: 'function', function: { name: 'list_tasks', arguments: '{"today":true}' } },
+    ]);
+  });
+
+  it('降级：上游 JSON 含 tool_calls → 归一为 tool_calls + done 事件', async () => {
+    const up = await startUpstream((_req, res) => {
+      res.setHeader('content-type', 'application/json');
+      res.end(
+        JSON.stringify({
+          choices: [{ message: { content: null, tool_calls: [{ id: 'c1', function: { name: 'list_tasks', arguments: '{}' } }] } }],
+        }),
+      );
+    });
+    const res = await request(createApp(':memory:'))
+      .post('/api/ai/chat')
+      .send(body(up.baseUrl, { stream: true, tools: TOOLS }));
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/event-stream');
+    const events = sseEvents(res.text);
+    expect(events.some((e) => e.type === 'tool_calls')).toBe(true);
+    const done = events.find((e) => e.type === 'done');
+    expect(done?.content).toBe('');
   });
 });

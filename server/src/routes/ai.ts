@@ -8,10 +8,15 @@ import { z } from 'zod';
  * 流式协议：body 传 stream:true 时，响应为自家简化 SSE 事件流
  * （服务端解析上游 OpenAI chunk 后重组，不原样字节透传）：
  *   data: {"type":"delta","content":"…"}   逐段
+ *   data: {"type":"tool_calls","tool_calls":[…]}  上游要求工具调用（done 前发一次，
+ *                                                  arguments 为聚合后的完整 JSON 字符串）
  *   data: {"type":"done","content":"全文"}  正常结束
  *   data: {"type":"error","error":"…"}      流中途失败（随后 res.end()）
  * 流开始前（连接失败 / 上游非 200 / 首字节超时 / zod 400）仍回 JSON 错误，
  * 与非流式语义一致。
+ *
+ * 工具调用（function calling）：后端只透传 tools 定义与 tool_calls 消息、
+ * 聚合上游流式碎片；**执行在前端**（先确认再写入），本路由不碰数据库。
  */
 
 export interface AiTimeouts {
@@ -25,6 +30,41 @@ export interface AiTimeouts {
 
 const DEFAULT_TIMEOUTS: AiTimeouts = { firstByteMs: 30_000, idleMs: 30_000, totalMs: 300_000 };
 
+/** 聚合后的工具调用（贴近 OpenAI wire 格式） */
+export interface UpstreamToolCall {
+  id: string;
+  type: 'function';
+  function: { name: string; arguments: string };
+}
+
+/** 消息里的 tool_calls（assistant 发起工具调用时携带） */
+const toolCallSchema = z.object({
+  id: z.string().max(200),
+  type: z.literal('function'),
+  function: z.object({
+    name: z.string().max(200),
+    arguments: z.string().max(64_000),
+  }),
+});
+
+const aiMessageSchema = z.object({
+  role: z.enum(['system', 'user', 'assistant', 'tool']),
+  // 工具结果回传需要更长余量；assistant 带 tool_calls 时 content 可为空串
+  content: z.string().max(16_000, '单条消息过长'),
+  tool_calls: z.array(toolCallSchema).max(20).optional(),
+  tool_call_id: z.string().max(200).optional(),
+  name: z.string().max(200).optional(),
+});
+
+const aiToolSchema = z.object({
+  type: z.literal('function'),
+  function: z.object({
+    name: z.string().max(200),
+    description: z.string().max(4000),
+    parameters: z.unknown().optional(),
+  }),
+});
+
 const aiChatSchema = z.object({
   baseUrl: z
     .string()
@@ -33,15 +73,12 @@ const aiChatSchema = z.object({
   apiKey: z.string().trim().min(1, 'API Key 不能为空').max(500),
   model: z.string().trim().min(1, '模型名不能为空').max(200),
   messages: z
-    .array(
-      z.object({
-        role: z.enum(['system', 'user', 'assistant']),
-        content: z.string().max(8000, '单条消息过长'),
-      })
-    )
+    .array(aiMessageSchema)
     .min(1, '消息不能为空')
-    .max(40, '对话历史过长，请开启新对话'),
+    .max(80, '对话历史过长，请开启新对话'),
   stream: z.boolean().optional(),
+  tools: z.array(aiToolSchema).max(20).optional(),
+  tool_choice: z.enum(['auto', 'none']).optional(),
 });
 
 /** 上游非 200 的友好文案（与旧版一致） */
@@ -53,15 +90,40 @@ function upstreamBrief(status: number): string {
       : `上游接口返回 ${status}`;
 }
 
+/** 非流式响应里的 message.tool_calls（完整对象）归一；坏条目跳过 */
+function normalizeToolCalls(raw: unknown): UpstreamToolCall[] {
+  if (!Array.isArray(raw)) return [];
+  const out: UpstreamToolCall[] = [];
+  for (const item of raw) {
+    const t = item as { id?: unknown; function?: { name?: unknown; arguments?: unknown } };
+    if (typeof t?.function?.name !== 'string' || !t.function.name) continue;
+    out.push({
+      id: typeof t.id === 'string' ? t.id : '',
+      type: 'function',
+      function: {
+        name: t.function.name,
+        arguments: typeof t.function.arguments === 'string' ? t.function.arguments : '',
+      },
+    });
+  }
+  return out;
+}
+
 /**
- * 逐行消费上游 SSE，解析 OpenAI chunk 的 delta.content。
+ * 逐行消费上游 SSE，解析 OpenAI chunk 的 delta.content 与 delta.tool_calls。
  * 行缓冲 + TextDecoder({stream:true}) 防中文跨 chunk 截断；
  * 跳过 keepalive 注释行 / [DONE] / role-only 块 / usage 块 / 坏行。
+ * tool_calls 为分片增量：按 index 聚合（id/name 覆盖式、arguments 字符串追加），
+ * 缺 index 容错为 0；流结束统一 flush 成完整调用列表。
  */
-async function pumpSse(upstream: Response, onDelta: (s: string) => void): Promise<string> {
+async function pumpSse(
+  upstream: Response,
+  onDelta: (s: string) => void,
+): Promise<{ content: string; toolCalls: UpstreamToolCall[] }> {
   const decoder = new TextDecoder('utf-8');
   let buf = '';
   let full = '';
+  const toolAcc = new Map<number, { id: string; name: string; args: string }>();
   /** 返回 {done: 是否收到 [DONE], rest: 未消费的半行缓冲} */
   const consumeLines = (text: string, isFinal: boolean): { done: boolean; rest: string } => {
     const lines = text.split('\n');
@@ -72,11 +134,29 @@ async function pumpSse(upstream: Response, onDelta: (s: string) => void): Promis
       const payload = s.slice(5).trim();
       if (payload === '[DONE]') return { done: true, rest: '' };
       try {
-        const j = JSON.parse(payload) as { choices?: { delta?: { content?: unknown } }[] };
-        const c = j.choices?.[0]?.delta?.content;
+        const j = JSON.parse(payload) as {
+          choices?: { delta?: { content?: unknown; tool_calls?: unknown[] } }[];
+        };
+        const delta = j.choices?.[0]?.delta;
+        const c = delta?.content;
         if (typeof c === 'string' && c) {
           full += c;
           onDelta(c);
+        }
+        if (Array.isArray(delta?.tool_calls)) {
+          for (const item of delta.tool_calls) {
+            const frag = item as {
+              index?: unknown;
+              id?: unknown;
+              function?: { name?: unknown; arguments?: unknown };
+            };
+            const idx = typeof frag.index === 'number' ? frag.index : 0;
+            const slot = toolAcc.get(idx) ?? { id: '', name: '', args: '' };
+            if (typeof frag.id === 'string' && frag.id) slot.id = frag.id;
+            if (typeof frag.function?.name === 'string' && frag.function.name) slot.name = frag.function.name;
+            if (typeof frag.function?.arguments === 'string') slot.args += frag.function.arguments;
+            toolAcc.set(idx, slot);
+          }
         }
       } catch {
         // 忽略无法解析的行
@@ -87,12 +167,15 @@ async function pumpSse(upstream: Response, onDelta: (s: string) => void): Promis
 
   for await (const chunk of upstream.body as unknown as AsyncIterable<Uint8Array>) {
     const r = consumeLines(buf + decoder.decode(chunk, { stream: true }), false);
-    if (r.done) return full;
-    buf = r.rest;
+    buf = r.rest; // 必须先更新再判 done（done 时 rest=''），否则尾部行会被终末 flush 重复消费
+    if (r.done) break;
   }
   // 上游关流未发 [DONE]：按正常结束处理，冲洗解码器后吃完剩余行
   consumeLines(buf + decoder.decode(), true);
-  return full;
+  const toolCalls: UpstreamToolCall[] = [...toolAcc.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([, s]) => ({ id: s.id, type: 'function', function: { name: s.name, arguments: s.args } }));
+  return { content: full, toolCalls };
 }
 
 export default function aiRoutes(timeoutOverrides?: Partial<AiTimeouts>): Router {
@@ -104,6 +187,8 @@ export default function aiRoutes(timeoutOverrides?: Partial<AiTimeouts>): Router
     const url = input.baseUrl.replace(/\/+$/, '') + '/chat/completions';
     const upstreamBody: Record<string, unknown> = { model: input.model, messages: input.messages };
     if (input.stream) upstreamBody.stream = true;
+    if (input.tools) upstreamBody.tools = input.tools;
+    if (input.tool_choice) upstreamBody.tool_choice = input.tool_choice;
 
     const controller = new AbortController();
     // 客户端断开 → 掐断上游（两个阶段都生效；必须先于 writeHead 注册）
@@ -128,13 +213,18 @@ export default function aiRoutes(timeoutOverrides?: Partial<AiTimeouts>): Router
             .json({ error: `${upstreamBrief(upstream.status)}${detail ? `：${detail.slice(0, 200)}` : ''}` });
           return;
         }
-        const data = (await upstream.json()) as { choices?: { message?: { content?: string } }[] };
-        const content = data.choices?.[0]?.message?.content;
-        if (typeof content !== 'string') {
+        const data = (await upstream.json()) as {
+          choices?: { message?: { content?: string; tool_calls?: unknown } }[];
+        };
+        const message = data.choices?.[0]?.message;
+        const toolCalls = normalizeToolCalls(message?.tool_calls);
+        const content = message?.content;
+        // 纯工具调用时上游 content 可能为 null：有 tool_calls 即视为有效响应
+        if (typeof content !== 'string' && toolCalls.length === 0) {
           res.status(502).json({ error: '上游返回格式异常（缺少回复内容）' });
           return;
         }
-        res.json({ content });
+        res.json({ content: content ?? '', toolCalls });
       } catch (err) {
         if ((err as Error).name === 'AbortError') {
           res.status(504).json({ error: `请求超时（${Math.round(timeouts.firstByteMs / 1000)} 秒），请检查接口地址或稍后重试` });
@@ -188,23 +278,29 @@ export default function aiRoutes(timeoutOverrides?: Partial<AiTimeouts>): Router
       const isSse = (upstream.headers.get('content-type') ?? '').includes('text/event-stream');
       if (!upstream.body || !isSse) {
         // 降级：上游忽略 stream:true 直接回了 JSON —— 归一成同一事件流
-        const data = (await upstream.json()) as { choices?: { message?: { content?: string } }[] };
-        const content = data.choices?.[0]?.message?.content;
-        if (typeof content !== 'string') {
+        const data = (await upstream.json()) as {
+          choices?: { message?: { content?: string; tool_calls?: unknown } }[];
+        };
+        const message = data.choices?.[0]?.message;
+        const toolCalls = normalizeToolCalls(message?.tool_calls);
+        const content = message?.content;
+        if (typeof content !== 'string' && toolCalls.length === 0) {
           sse({ type: 'error', error: '上游返回格式异常（缺少回复内容）' });
           res.end();
           return;
         }
-        sse({ type: 'delta', content });
-        sse({ type: 'done', content });
+        if (content) sse({ type: 'delta', content });
+        if (toolCalls.length) sse({ type: 'tool_calls', tool_calls: toolCalls });
+        sse({ type: 'done', content: content ?? '' });
         res.end();
         return;
       }
 
-      const full = await pumpSse(upstream, (s) => {
+      const { content: full, toolCalls } = await pumpSse(upstream, (s) => {
         armIdle();
         sse({ type: 'delta', content: s });
       });
+      if (toolCalls.length) sse({ type: 'tool_calls', tool_calls: toolCalls });
       sse({ type: 'done', content: full });
       res.end();
     } catch (err) {
