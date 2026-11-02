@@ -129,9 +129,9 @@ try {
   const boxes = card.locator('input[type="checkbox"]');
   ok('3 个条目全部默认勾选', (await boxes.count()) === 3);
 
-  // 2. 上游第 1 次请求：带 5 个 tools + system 含工具守则
+  // 2. 上游第 1 次请求：带 11 个 tools + system 含工具守则
   const c1 = calls[0];
-  ok('上游收到 tools（5 个）', c1?.tools?.length === 5);
+  ok('上游收到 tools（11 个）', c1?.tools?.length === 11);
   ok('system 注入工具守则', (c1?.messages?.find((m) => m.role === 'system')?.content ?? '').includes('使用守则'));
 
   // 3. 标题微调 + 去勾一条 → 确认执行
@@ -160,7 +160,7 @@ try {
   ok('工具结果以 role:tool 回传', Boolean(toolMsg));
   ok('结果含 skip 状态', (toolMsg?.content ?? '').includes('"skip"'));
   ok('assistant tool_calls 一并回传', c2?.messages?.some((m) => m.role === 'assistant' && Array.isArray(m.tool_calls)));
-  ok('第二轮仍带 tools', c2?.tools?.length === 5);
+  ok('第二轮仍带 tools', c2?.tools?.length === 11);
   await page.screenshot({ path: join(OUT, 'b-结果卡与总结.png') });
 
   // 7. localStorage 持久化：tool 消息 + 工具调用记录

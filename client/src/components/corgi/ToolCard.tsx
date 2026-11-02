@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   describeCall,
   executeToolCall,
+  type ExecSelection,
   type ToolCallRecord,
   type ToolExecOutcome,
 } from '../../lib/corgiTools';
@@ -33,17 +34,23 @@ export default function ToolCard({
     calls.map((c) => describeCall(c)?.items.map(() => true) ?? []),
   );
   const [titles, setTitles] = useState<Record<string, string>>({});
+  // 属性微调（date/select 编辑器），键 `${ci}:${ii}` → 字段名 → 新值
+  const [fields, setFields] = useState<Record<string, Record<string, string>>>({});
   const [executing, setExecuting] = useState(false);
 
   const described = calls.map((c) => describeCall(c));
+  const anyDanger = described.some((d) => d?.danger);
   const totalItems = described.reduce((n, d) => n + (d?.items.length ?? 0), 0);
   const checkedCount = checked.flat().filter(Boolean).length;
 
   const invalidate = () => {
-    for (const key of ['tasks', 'stats', 'goals', 'schedules', 'inspirations']) {
+    for (const key of ['tasks', 'stats', 'goals', 'schedules', 'inspirations', 'subtasks']) {
       void queryClient.invalidateQueries({ queryKey: [key] });
     }
   };
+
+  const setField = (ci: number, ii: number, key: string, v: string) =>
+    setFields((prev) => ({ ...prev, [`${ci}:${ii}`]: { ...prev[`${ci}:${ii}`], [key]: v } }));
 
   const doConfirm = async () => {
     if (executing) return;
@@ -51,17 +58,23 @@ export default function ToolCard({
     try {
       const results: ToolExecOutcome[] = [];
       for (let ci = 0; ci < calls.length; ci++) {
-        const sel = { selected: [], titleOverrides: {} } as {
-          selected: number[];
-          titleOverrides: Record<number, string>;
-        };
+        const selected: number[] = [];
         checked[ci].forEach((on, ii) => {
-          if (on) sel.selected.push(ii);
+          if (on) selected.push(ii);
         });
+        const titleOverrides: Record<number, string> = {};
+        const fieldOverrides: Record<number, Record<string, string>> = {};
         described[ci]?.items.forEach((_, ii) => {
           const t = titles[`${ci}:${ii}`];
-          if (t != null && t.trim()) sel.titleOverrides[ii] = t.trim();
+          if (t != null && t.trim()) titleOverrides[ii] = t.trim();
+          const f = fields[`${ci}:${ii}`];
+          if (f && Object.values(f).some((v) => v != null && v !== '')) fieldOverrides[ii] = f;
         });
+        const sel: ExecSelection = {
+          selected,
+          titleOverrides,
+          ...(Object.keys(fieldOverrides).length ? { fieldOverrides } : {}),
+        };
         results.push(await executeToolCall(calls[ci], sel));
       }
       invalidate();
@@ -129,9 +142,12 @@ export default function ToolCard({
                     >
                       {it.label}
                     </span>
-                    {it.detail && it.status === 'fail' && (
-                      <span className="shrink-0 text-[11px] text-red-400 dark:text-red-500">{it.detail}</span>
-                    )}
+                    {it.detail &&
+                      (it.status === 'fail' ? (
+                        <span className="shrink-0 text-[11px] text-red-400 dark:text-red-500">{it.detail}</span>
+                      ) : it.status === 'ok' ? (
+                        <span className="shrink-0 text-[11px] text-zinc-400 dark:text-zinc-500">{it.detail}</span>
+                      ) : null)}
                   </div>
                 ))}
               </div>
@@ -146,15 +162,28 @@ export default function ToolCard({
   return (
     <div
       data-testid="corgi-tool-card"
-      className="overflow-hidden rounded-[14px] border border-black/[0.07] bg-white/[0.85] shadow-[0_1px_2px_rgba(20,12,16,0.04),0_6px_20px_rgba(20,12,16,0.05)] backdrop-blur-[12px] backdrop-saturate-150 dark:border-white/[0.06] dark:bg-white/[0.055] dark:shadow-[0_1px_2px_rgba(0,0,0,0.25),0_6px_20px_rgba(0,0,0,0.3)]"
+      className={`overflow-hidden rounded-[14px] border bg-white/[0.85] shadow-[0_1px_2px_rgba(20,12,16,0.04),0_6px_20px_rgba(20,12,16,0.05)] backdrop-blur-[12px] backdrop-saturate-150 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25),0_6px_20px_rgba(0,0,0,0.3)] ${
+        anyDanger
+          ? 'border-red-500/35 dark:border-red-400/30 dark:bg-white/[0.055]'
+          : 'border-black/[0.07] dark:border-white/[0.06] dark:bg-white/[0.055]'
+      }`}
     >
-      <div className="flex items-center gap-1.5 px-3.5 py-2.5 text-[13px] font-semibold">
-        <span>🔧</span>
+      <div
+        className={`flex items-center gap-1.5 px-3.5 py-2.5 text-[13px] font-semibold ${
+          anyDanger ? 'text-red-600 dark:text-red-400' : ''
+        }`}
+      >
+        <span>{anyDanger ? '⚠️' : '🔧'}</span>
         <span>
           柯基想帮你
           {calls.length === 1 ? described[0]?.head ?? `执行 ${calls[0].name}` : `执行 ${calls.length} 项操作（共 ${totalItems} 条）`}
         </span>
       </div>
+      {anyDanger && (
+        <div className="border-t border-red-500/15 bg-red-500/[0.06] px-3.5 py-1.5 text-[11px] text-red-500/90 dark:border-red-400/10 dark:bg-red-400/[0.07] dark:text-red-400/90">
+          删除操作不可恢复，请逐条确认
+        </div>
+      )}
       <div className="border-t border-black/[0.06] dark:border-white/[0.05]">
         {calls.map((_call, ci) => {
           const d = described[ci];
@@ -190,6 +219,38 @@ export default function ToolCard({
                     ))}
                   </div>
                 )}
+                {item.edits && item.edits.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    {item.edits.map((ed) =>
+                      ed.kind === 'date' ? (
+                        <input
+                          key={ed.key}
+                          type="date"
+                          data-testid={`corgi-tool-field-${ci}-${ii}-${ed.key}`}
+                          value={fields[`${ci}:${ii}`]?.[ed.key] ?? ed.value}
+                          disabled={executing}
+                          onChange={(e) => setField(ci, ii, ed.key, e.target.value)}
+                          className="rounded-md border border-black/[0.08] bg-black/[0.02] px-1.5 py-0.5 text-[11px] text-zinc-600 outline-none transition-colors focus:border-rose-400 dark:border-white/[0.09] dark:bg-white/[0.05] dark:text-zinc-300"
+                        />
+                      ) : (
+                        <select
+                          key={ed.key}
+                          data-testid={`corgi-tool-field-${ci}-${ii}-${ed.key}`}
+                          value={fields[`${ci}:${ii}`]?.[ed.key] ?? ed.value}
+                          disabled={executing}
+                          onChange={(e) => setField(ci, ii, ed.key, e.target.value)}
+                          className="cursor-pointer rounded-md border border-black/[0.08] bg-black/[0.02] px-1.5 py-0.5 text-[11px] text-zinc-600 outline-none transition-colors focus:border-rose-400 dark:border-white/[0.09] dark:bg-white/[0.05] dark:text-zinc-300"
+                        >
+                          {ed.options?.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      ),
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ));
@@ -213,9 +274,17 @@ export default function ToolCard({
               data-testid="corgi-tool-confirm"
               onClick={doConfirm}
               disabled={checkedCount === 0}
-              className="cursor-pointer rounded-[9px] bg-rose-500 px-3.5 py-1.5 text-xs font-medium text-rose-fg transition-[filter] hover:brightness-105 disabled:cursor-default disabled:opacity-45"
+              className={
+                anyDanger
+                  ? 'cursor-pointer rounded-[9px] bg-red-600 px-3.5 py-1.5 text-xs font-medium text-white transition-[filter] hover:brightness-105 disabled:cursor-default disabled:opacity-45'
+                  : 'cursor-pointer rounded-[9px] bg-rose-500 px-3.5 py-1.5 text-xs font-medium text-rose-fg transition-[filter] hover:brightness-105 disabled:cursor-default disabled:opacity-45'
+              }
             >
-              {checkedCount === totalItems ? '确认执行' : `确认执行 (${checkedCount}/${totalItems})`}
+              {checkedCount === totalItems
+                ? anyDanger
+                  ? '确认删除'
+                  : '确认执行'
+                : `${anyDanger ? '确认删除' : '确认执行'} (${checkedCount}/${totalItems})`}
             </button>
           </>
         )}

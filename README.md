@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Electron](https://img.shields.io/badge/Electron-39-47848F?logo=electron&logoColor=white)](https://www.electronjs.org)
 [![SQLite](https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white)](https://nodejs.org/api/sqlite.html)
-[![Release](https://img.shields.io/badge/下载-v1.5.0-rose?logo=github)](../../releases)
+[![Release](https://img.shields.io/badge/下载-v1.6.0-rose?logo=github)](../../releases)
 
 > 🐕 一只住在桌面角落的像素柴犬：点亮它开面板，按住它拖到任意位置，平时点击穿透绝不挡你操作。
 >
@@ -87,7 +87,7 @@ node scripts/verify-ui.mjs   # 浏览器端自动验收（需 dev 已启动，�
 
 - **交互优化**：任务/目标/日程整块点击即编辑；分类使用彩色徽章；AI 侧栏展开时日历保持自适应
 - **贴图**：任务、目标和灵感均支持选图或 `Ctrl+V` 粘贴截图，自动压缩并可点击全屏查看
-- **🐕 柯基 AI 助手**：右侧可折叠聊天侧栏（宽度可拖拽调整、双击回默认），配置任意 OpenAI 兼容接口（地址/模型/Key 仅存本地浏览器）；回复**流式逐字输出**；**多会话管理**（自动命名/切换/删除）；「今日安排」开关让柯基看到你的今日任务与日程；**工具调用**：柯基能真的帮你建任务/查任务/勾选完成/建日程/记灵感——写操作先出确认卡（逐条勾选、标题可微调），确认后写入系统再流式总结；柯基人格可自定义，回复支持 Markdown 渲染，聊天历史本地保留
+- **🐕 柯基 AI 助手**：右侧可折叠聊天侧栏（宽度可拖拽调整、双击回默认），配置任意 OpenAI 兼容接口（地址/模型/Key 仅存本地浏览器）；回复**流式逐字输出**；**多会话管理**（自动命名/切换/删除）；「今日安排」开关让柯基看到你的今日任务与日程；**工具调用（11 个）**：柯基能真的帮你建任务/查任务/勾选完成/建日程/记灵感，还能**改任务**（截止日期/优先级/分类/标签/改名）、**改目标**、**删任务/日程/灵感/目标**——写操作先出确认卡（逐条勾选、标题可微调，更新卡上可直接调日期与优先级），确认后写入系统再流式总结，删除卡带红色警示；柯基人格可自定义，回复支持 Markdown 渲染，聊天历史本地保留
 - **主题**：侧栏底部按钮切换深/浅色（默认专业暗色），选择持久化，刷新不闪烁
 - **桌面宠物**：像素柴犬常驻右下角；平时点击穿透不挡其他窗口，悬停激活（发光提示）后可点击开面板/拖动/右键菜单
 - **数据**：存储于 `server/data/dashboard.db`（SQLite，WAL 模式），重启不丢失；安装包版存于 `%APPDATA%\desktop\data\dashboard.db`
