@@ -13,6 +13,16 @@
 >
 > **Made by [Kexuan](https://github.com/hlpatw)** 🌸
 
+## 界面预览
+
+<p align="center">
+  <img src="docs/images/themes.png" alt="旺达工作台：暗色 / 浅色双主题概览">
+</p>
+
+<p align="center">
+  <img src="docs/images/features.png" alt="功能总览：任务 · 日历 · 此刻灵感 · 目标 · 统计 · 柯基 AI 侧栏">
+</p>
+
 ## 技术栈
 
 - **前端**：React 19 + Vite + TypeScript + Tailwind CSS v4 + TanStack Query + zustand + recharts + date-fns
