@@ -339,7 +339,7 @@ function mergeNullableDate(
   const fromCard = validDate(ov);
   if (fromCard) return fromCard;
   if (key in item) {
-    if (item[key] == null) return null;
+    if (item[key] == null || item[key] === '') return null;
     return validDate(item[key]) ?? current;
   }
   return current;
@@ -458,7 +458,7 @@ async function execUpdateTasks(args: Record<string, unknown>, sel: ExecSelection
         const v =
           typeof m === 'number' && m >= 0 && m <= 100000
             ? Math.round(m)
-            : m == null
+            : m == null || m === ''
               ? null
               : target.estimated_minutes;
         if (v !== target.estimated_minutes) {
@@ -1008,12 +1008,12 @@ export const CORGI_TOOLS: AiToolDef[] = [
                 id: { type: 'number', description: '任务 id（优先用这个）' },
                 title: { type: 'string', description: '现有任务标题（与任务列表完全一致的全文，用于匹配）' },
                 new_title: { type: 'string', description: '新标题（改名时传）' },
-                due_date: { type: ['string', 'null'], description: '新截止日期 YYYY-MM-DD；传 null 清除截止日期' },
+                due_date: { type: 'string', description: '新截止日期 YYYY-MM-DD；传空字符串 "" 清除截止日期' },
                 priority: { type: 'string', enum: [...TASK_PRIORITIES], description: '新优先级' },
                 category: { type: 'string', enum: [...TASK_CATEGORIES], description: '新分类' },
                 tags: { type: 'array', items: { type: 'string' }, description: '标签整体替换，传完整新列表（每项 ≤20 字，最多 8 个）' },
                 description: { type: 'string', description: '新描述' },
-                estimated_minutes: { type: ['number', 'null'], description: '新预计时长（分钟）；传 null 清除' },
+                estimated_minutes: { type: 'number', description: '新预计时长（分钟）' },
                 status: { type: 'string', enum: [...TASK_STATUSES], description: '新状态（完成任务优先用 complete_tasks）' },
               },
             },
@@ -1042,7 +1042,7 @@ export const CORGI_TOOLS: AiToolDef[] = [
                 new_title: { type: 'string', description: '新标题（改名时传）' },
                 note: { type: 'string', description: '新备注' },
                 category: { type: 'string', enum: [...TASK_CATEGORIES], description: '新分类' },
-                target_date: { type: ['string', 'null'], description: '新目标日期 YYYY-MM-DD；传 null 清除' },
+                target_date: { type: 'string', description: '新目标日期 YYYY-MM-DD；传空字符串 "" 清除' },
                 status: { type: 'string', enum: [...GOAL_STATUSES], description: '新状态' },
               },
             },

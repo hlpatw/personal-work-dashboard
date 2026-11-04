@@ -72,6 +72,8 @@ interface CorgiChatState {
   /** awaiting_confirm 时待确认的 call id 列表（确认卡判活依据；非持久化） */
   pendingCallIds: string[] | null;
   error: string;
+  /** 上游拒绝 tools 时的降级提示（非持久化；每次 send 复位，不污染会话历史） */
+  notice: string;
   newSession: () => void;
   switchSession: (id: string) => void;
   deleteSession: (id: string) => void;
@@ -271,9 +273,13 @@ export const useCorgiChatStore = create<CorgiChatState>()(
 
           if (!result) {
             const aborted = controller.signal.aborted;
-            // 上游不支持 tools（报错提及 tool/function）→ 本回合降级重试一次
+            // 上游不支持 tools（报错提及 tool/function）→ 本回合降级重试一次；亮提示不再静默
             if (tools && !toolsFallback && /tool|function/i.test(failure?.message ?? '')) {
               toolsFallback = true;
+              console.warn('[corgi] 上游拒绝工具调用，本回合降级为纯对话：', failure?.message);
+              set({
+                notice: `⚠️ 上游接口拒绝了工具调用，本轮已降级为纯对话（柯基暂时无法操作系统）。原因：${(failure?.message ?? '').slice(0, 160)}——可换用支持工具调用的模型后重试。`,
+              });
               continue; // 同一 round 重试（不带 tools）
             }
             // 中断：半截内容先落盘再报错
@@ -345,17 +351,18 @@ export const useCorgiChatStore = create<CorgiChatState>()(
         phase: 'idle',
         pendingCallIds: null,
         error: '',
+        notice: '',
 
         newSession: () => {
           finalizePendingAsSkipped();
           abortActive();
-          set({ activeSessionId: '', streamingText: '', phase: 'idle', pendingCallIds: null, error: '' });
+          set({ activeSessionId: '', streamingText: '', phase: 'idle', pendingCallIds: null, error: '', notice: '' });
         },
         switchSession: (id) => {
           if (id === get().activeSessionId) return;
           finalizePendingAsSkipped();
           abortActive();
-          set({ activeSessionId: id, streamingText: '', phase: 'idle', pendingCallIds: null, error: '' });
+          set({ activeSessionId: id, streamingText: '', phase: 'idle', pendingCallIds: null, error: '', notice: '' });
         },
         deleteSession: (id) => {
           if (get().activeSessionId === id) {
@@ -373,7 +380,7 @@ export const useCorgiChatStore = create<CorgiChatState>()(
                   ? sessions[sessions.length - 1].id
                   : ''
                 : s.activeSessionId,
-              ...(wasActive ? { streamingText: '', phase: 'idle' as ChatPhase, pendingCallIds: null, error: '' } : {}),
+              ...(wasActive ? { streamingText: '', phase: 'idle' as ChatPhase, pendingCallIds: null, error: '', notice: '' } : {}),
             };
           });
         },
@@ -402,7 +409,7 @@ export const useCorgiChatStore = create<CorgiChatState>()(
           const sid = get().activeSessionId || crypto.randomUUID();
           pushMessageTo(sid, { role: 'user', content });
           toolsFallback = false;
-          set({ streamingText: '', phase: 'streaming', pendingCallIds: null, error: '' });
+          set({ streamingText: '', phase: 'streaming', pendingCallIds: null, error: '', notice: '' });
 
           // system：人格 +（可选）今日快照 +（可选）工具守则
           let system = systemPrompt || '你是柯基，温暖的陪伴助手。';
