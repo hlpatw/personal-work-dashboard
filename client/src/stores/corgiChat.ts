@@ -6,7 +6,7 @@ import { buildTodaySnapshot } from '../lib/corgiContext';
 import {
   CORGI_TOOLS,
   CORGI_TOOLS_HINT,
-  describeCall,
+  badCallReason,
   executeToolCall,
   isReadonlyTool,
   parseToolCalls,
@@ -307,15 +307,10 @@ export const useCorgiChatStore = create<CorgiChatState>()(
           const writers: ToolCallRecord[] = [];
           for (const rec of records) {
             // 坏调用（解析失败 / 未知工具 / 空条目）与只读调用：立即落结果，不进确认卡
-            const bad = rec.parseError != null || describeCall(rec) === null;
-            if (bad || isReadonlyTool(rec.name)) {
-              const oc: ToolExecOutcome = bad
-                ? {
-                    tool: rec.name,
-                    items: [],
-                    error: rec.parseError ?? '工具参数为空或格式不符',
-                  }
-                : await executeToolCall(rec);
+            // 坏调用原因带具体信息（工具名/参数预览），模型收到后可在下一轮自我纠正
+            const badMsg = badCallReason(rec);
+            if (badMsg != null || isReadonlyTool(rec.name)) {
+              const oc: ToolExecOutcome = badMsg != null ? { tool: rec.name, items: [], error: badMsg } : await executeToolCall(rec);
               pushMessageTo(sid, {
                 role: 'tool',
                 content: serializeOutcome(oc),

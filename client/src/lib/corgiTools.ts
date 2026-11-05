@@ -147,6 +147,30 @@ function titleOf(sel: { titleOverrides?: Record<number, string> }, index: number
   return str(sel.titleOverrides?.[index], 200) || fallback;
 }
 
+/**
+ * 宽容解析批量条目：复数/单数键都认，裸字符串视为 stringField，单对象包成数组
+ * （救弱模型的常见写法：{"task": "名字"} / "tasks": ["名字"]）
+ */
+function toolItems(args: Record<string, unknown>, keys: string[], stringField = 'title'): ItemArgs[] {
+  for (const k of keys) {
+    const v = args[k];
+    if (Array.isArray(v)) {
+      return v.flatMap((x) =>
+        typeof x === 'string'
+          ? x.trim()
+            ? [{ [stringField]: x.trim() } as ItemArgs]
+            : []
+          : x && typeof x === 'object'
+            ? [x as ItemArgs]
+            : [],
+      );
+    }
+    if (typeof v === 'string' && v.trim()) return [{ [stringField]: v.trim() } as ItemArgs];
+    if (v && typeof v === 'object') return [v as ItemArgs];
+  }
+  return [];
+}
+
 /* ===================== 执行器 ===================== */
 
 export interface ExecSelection {
@@ -195,7 +219,7 @@ export async function executeToolCall(rec: ToolCallRecord, sel: ExecSelection = 
 }
 
 async function execCreateTasks(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.tasks, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['tasks', 'task']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title, 120) || '未命名任务'));
   for (const { item, index } of picked) {
@@ -252,7 +276,7 @@ async function execListTasks(args: Record<string, unknown>): Promise<ToolExecOut
 }
 
 async function execCompleteTasks(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.tasks, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['tasks', 'task']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title ?? s.id, 120) || `任务 #${s.id ?? '?'}`));
   for (const { item, index } of picked) {
@@ -346,7 +370,7 @@ function mergeNullableDate(
 }
 
 async function execCreateSchedules(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.schedules, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['schedules', 'schedule']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title, 120) || '未命名日程'));
   for (const { item, index } of picked) {
@@ -374,7 +398,7 @@ async function execCreateSchedules(args: Record<string, unknown>, sel: ExecSelec
 }
 
 async function execCreateInspirations(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.inspirations, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['inspirations', 'inspiration'], 'content'), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.content, 60) || '灵感'));
   for (const { item } of picked) {
@@ -398,7 +422,7 @@ async function execCreateInspirations(args: Record<string, unknown>, sel: ExecSe
 }
 
 async function execUpdateTasks(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.tasks, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['tasks', 'task']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title ?? s.id, 120) || `任务 #${s.id ?? '?'}`));
   for (const { item, index } of picked) {
@@ -489,7 +513,7 @@ async function execUpdateTasks(args: Record<string, unknown>, sel: ExecSelection
 }
 
 async function execUpdateGoals(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.goals, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['goals', 'goal']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title ?? s.id, 120) || `目标 #${s.id ?? '?'}`));
   for (const { item, index } of picked) {
@@ -545,7 +569,7 @@ async function execUpdateGoals(args: Record<string, unknown>, sel: ExecSelection
 }
 
 async function execDeleteTasks(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.tasks, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['tasks', 'task']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title ?? s.id, 120) || `任务 #${s.id ?? '?'}`));
   for (const { item, index } of picked) {
@@ -568,7 +592,7 @@ async function execDeleteTasks(args: Record<string, unknown>, sel: ExecSelection
 }
 
 async function execDeleteSchedules(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.schedules, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['schedules', 'schedule']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title ?? s.id, 120) || `日程 #${s.id ?? '?'}`));
   for (const { item, index } of picked) {
@@ -595,7 +619,7 @@ async function execDeleteSchedules(args: Record<string, unknown>, sel: ExecSelec
 }
 
 async function execDeleteInspirations(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.inspirations, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['inspirations', 'inspiration'], 'content'), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.content ?? s.id, 60) || '灵感'));
   for (const { item, index } of picked) {
@@ -617,7 +641,7 @@ async function execDeleteInspirations(args: Record<string, unknown>, sel: ExecSe
 }
 
 async function execDeleteGoals(args: Record<string, unknown>, sel: ExecSelection): Promise<ToolExecOutcome> {
-  const { picked, skipped } = pickItems<ItemArgs>(args.goals, sel);
+  const { picked, skipped } = pickItems<ItemArgs>(toolItems(args, ['goals', 'goal']), sel);
   const items: ToolItemOutcome[] = [];
   for (const s of skipped) items.push(skipOutcome(str(s.title ?? s.id, 120) || `目标 #${s.id ?? '?'}`));
   for (const { item, index } of picked) {
@@ -675,7 +699,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
   };
   switch (rec.name) {
     case 'create_tasks': {
-      const list = (Array.isArray(rec.args.tasks) ? rec.args.tasks : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['tasks', 'task']);
       if (!list.length) return null;
       return {
         head: `创建 ${list.length} 个任务`,
@@ -686,7 +710,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'complete_tasks': {
-      const list = (Array.isArray(rec.args.tasks) ? rec.args.tasks : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['tasks', 'task']);
       if (!list.length) return null;
       return {
         head: `完成 ${list.length} 个任务`,
@@ -697,7 +721,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'create_schedules': {
-      const list = (Array.isArray(rec.args.schedules) ? rec.args.schedules : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['schedules', 'schedule']);
       if (!list.length) return null;
       return {
         head: `创建 ${list.length} 条日程`,
@@ -711,7 +735,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'create_inspirations': {
-      const list = (Array.isArray(rec.args.inspirations) ? rec.args.inspirations : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['inspirations', 'inspiration'], 'content');
       if (!list.length) return null;
       return {
         head: `记录 ${list.length} 条灵感`,
@@ -722,7 +746,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'update_tasks': {
-      const list = (Array.isArray(rec.args.tasks) ? rec.args.tasks : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['tasks', 'task']);
       if (!list.length) return null;
       const zinc = 'text-zinc-500 dark:text-zinc-400';
       const muted = 'text-zinc-400 dark:text-zinc-500';
@@ -764,7 +788,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'update_goals': {
-      const list = (Array.isArray(rec.args.goals) ? rec.args.goals : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['goals', 'goal']);
       if (!list.length) return null;
       const zinc = 'text-zinc-500 dark:text-zinc-400';
       const muted = 'text-zinc-400 dark:text-zinc-500';
@@ -791,7 +815,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'delete_tasks': {
-      const list = (Array.isArray(rec.args.tasks) ? rec.args.tasks : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['tasks', 'task']);
       if (!list.length) return null;
       const red = 'text-red-500 dark:text-red-400';
       return {
@@ -807,7 +831,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'delete_schedules': {
-      const list = (Array.isArray(rec.args.schedules) ? rec.args.schedules : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['schedules', 'schedule']);
       if (!list.length) return null;
       const red = 'text-red-500 dark:text-red-400';
       const zinc = 'text-zinc-500 dark:text-zinc-400';
@@ -824,7 +848,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'delete_inspirations': {
-      const list = (Array.isArray(rec.args.inspirations) ? rec.args.inspirations : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['inspirations', 'inspiration'], 'content');
       if (!list.length) return null;
       const red = 'text-red-500 dark:text-red-400';
       return {
@@ -837,7 +861,7 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
       };
     }
     case 'delete_goals': {
-      const list = (Array.isArray(rec.args.goals) ? rec.args.goals : []) as ItemArgs[];
+      const list = toolItems(rec.args, ['goals', 'goal']);
       if (!list.length) return null;
       const red = 'text-red-500 dark:text-red-400';
       const zinc = 'text-zinc-500 dark:text-zinc-400';
@@ -860,6 +884,36 @@ export function describeCall(rec: ToolCallRecord): { head: string; items: ToolIt
 
 /** 只读工具（无副作用，免确认直接执行） */
 export const isReadonlyTool = (name: ToolName): boolean => name === 'list_tasks';
+
+const KNOWN_TOOLS = new Set<string>([
+  'create_tasks',
+  'list_tasks',
+  'complete_tasks',
+  'create_schedules',
+  'create_inspirations',
+  'update_tasks',
+  'update_goals',
+  'delete_tasks',
+  'delete_schedules',
+  'delete_inspirations',
+  'delete_goals',
+]);
+
+/**
+ * 坏调用的具体原因（会作为 tool 结果回传给模型，便于下一轮自我纠正）；null = 调用有效。
+ * 报错必须带上模型实际发来的名字/参数预览，否则模型无从改起。
+ */
+export function badCallReason(rec: ToolCallRecord): string | null {
+  if (rec.parseError) return rec.parseError;
+  if (!KNOWN_TOOLS.has(rec.name)) {
+    return `未知工具 "${rec.name}"：工具名必须与清单完全一致（复数形式，如 delete_tasks / update_tasks）`;
+  }
+  if (describeCall(rec) === null) {
+    const preview = JSON.stringify(rec.args).slice(0, 120);
+    return `${rec.name} 参数为空或格式不符，收到：${preview}。批量条目应放在 "tasks"/"goals"/"schedules"/"inspirations" 复数数组字段里`;
+  }
+  return null;
+}
 
 /* ===================== 工具定义（发给上游） ===================== */
 
@@ -1164,4 +1218,5 @@ export const CORGI_TOOLS_HINT = `你可以调用工具直接操作用户的任�
 - 删除是危险操作：只在用户明确说"删除/删掉"时调用 delete_*；要删哪些必须逐条列清楚交给用户确认，不要自行扩大范围；范围模糊时先问用户。
 - 删除目标不会删除其下任务，只是解除关联。
 - 所有按标题的匹配都是精确匹配，找不到或同名多个就如实报告并建议用 id，不要猜。
+- 工具名与参数键必须与清单完全一致（复数形式，如 delete_tasks；条目放在 "tasks"/"goals"/"schedules"/"inspirations" 数组里）。不知道任务名时先 list_tasks。
 - 工具执行结果会回传给你：写操作由用户确认后执行。收到结果后用一两句自然的话总结（说清成了几条、跳过或失败了几条即可，不要复述全部细节）。`;
